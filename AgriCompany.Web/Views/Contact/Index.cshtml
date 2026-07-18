@@ -1,0 +1,111 @@
+@model CompanyInformation
+@{
+    ViewData["Title"] = "تواصل معنا";
+    ViewData["MetaDescription"] = $"تواصل مع {Model.CompanyNameAr} عبر الهاتف أو واتساب أو البريد الإلكتروني. {Model.Address}";
+    ViewData["MetaKeywords"] = $"تواصل معنا, {Model.CompanyNameAr}, اتصل بنا, واتساب";
+}
+<div class="page-header text-center">
+    <div class="container">
+        <h1>تواصل معنا</h1>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb justify-content-center mb-0">
+                <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">الرئيسية</a></li>
+                <li class="breadcrumb-item active">تواصل معنا</li>
+            </ol>
+        </nav>
+    </div>
+</div>
+
+<section class="py-5">
+    <div class="container">
+        <div class="row g-4 mb-5">
+            <div class="col-md-4" data-aos="fade-up">
+                <div class="contact-info-card text-center">
+                    <i class="fa-solid fa-location-dot mb-3"></i>
+                    <h6 class="fw-bold">العنوان</h6>
+                    <p class="text-muted mb-0">@Model.Address</p>
+                </div>
+            </div>
+            <div class="col-md-4" data-aos="fade-up" data-aos-delay="100">
+                <div class="contact-info-card text-center">
+                    <i class="fa-solid fa-phone mb-3"></i>
+                    <h6 class="fw-bold">رقم الهاتف</h6>
+                    <p class="text-muted mb-0">@Model.Phone</p>
+                </div>
+            </div>
+            <div class="col-md-4" data-aos="fade-up" data-aos-delay="200">
+                <div class="contact-info-card text-center">
+                    <i class="fa-brands fa-whatsapp mb-3"></i>
+                    <h6 class="fw-bold">واتساب</h6>
+                    <p class="text-muted mb-0">
+                        <a href="https://wa.me/@Model.WhatsAppNumber" target="_blank" rel="noopener" class="text-decoration-none">
+                            تواصل مباشر
+                        </a>
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-5">
+            <!-- Contact form -->
+            <div class="col-lg-6" data-aos="fade-left">
+                <h4 class="fw-bold mb-4">أرسل لنا رسالة</h4>
+                <form asp-controller="Contact" asp-action="Index" method="post">
+                    <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+                    <div class="mb-3">
+                        <label class="form-label">الاسم بالكامل <span class="text-danger">*</span></label>
+                        <input type="text" name="FullName" class="form-control" required maxlength="150" />
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">رقم الهاتف <span class="text-danger">*</span></label>
+                            <input type="text" name="Phone" class="form-control" required maxlength="30" />
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">البريد الإلكتروني</label>
+                            <input type="email" name="Email" class="form-control" maxlength="150" />
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">الموضوع <span class="text-danger">*</span></label>
+                        <input type="text" name="Subject" class="form-control" required maxlength="200" />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">الرسالة <span class="text-danger">*</span></label>
+                        <textarea name="Message" rows="5" class="form-control" required></textarea>
+                    </div>
+
+                    <button type="submit" class="btn btn-success rounded-pill px-4">
+                        <i class="fa-solid fa-paper-plane"></i> إرسال الرسالة
+                    </button>
+                </form>
+            </div>
+
+            <!-- Map -->
+            <div class="col-lg-6" data-aos="fade-right">
+                <h4 class="fw-bold mb-4">موقعنا على الخريطة</h4>
+                @if (!string.IsNullOrWhiteSpace(Model.GoogleMapsEmbedUrl))
+                {
+                    <iframe src="@Model.GoogleMapsEmbedUrl" class="map-frame" allowfullscreen="" loading="lazy"></iframe>
+                }
+                else
+                {
+                    <div class="map-frame d-flex align-items-center justify-content-center bg-light text-muted">
+                        الخريطة غير متاحة حاليًا
+                    </div>
+                }
+
+                @if (!string.IsNullOrWhiteSpace(Model.WorkingHours))
+                {
+                    <div class="mt-4 p-3 bg-light rounded-3">
+                        <i class="fa-solid fa-clock text-success"></i> <strong>مواعيد العمل:</strong> @Model.WorkingHours
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</section>

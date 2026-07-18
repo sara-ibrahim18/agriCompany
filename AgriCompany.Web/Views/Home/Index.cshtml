@@ -1,0 +1,210 @@
+@model HomeViewModel
+@{
+    ViewData["Title"] = "الرئيسية";
+    ViewData["MetaDescription"] = Model.Company?.AboutText?.Length > 160
+        ? Model.Company.AboutText.Substring(0, 157) + "..."
+        : (Model.Company?.AboutText ?? "منتجات زراعية عالية الجودة، أسمدة ومستلزمات زراعية لخدمة المزارع المصري.");
+    ViewData["MetaKeywords"] = "منتجات زراعية, أسمدة, مستلزمات زراعية, " + string.Join(", ", Model.Categories.Select(c => c.NameAr));
+}
+
+
+<!-- Hero Slider -->
+@if (Model.Slides.Any())
+{
+    <div class="swiper hero-swiper">
+        <div class="swiper-wrapper">
+            @{
+                var slideIndex = 0;
+            }
+            @foreach (var slide in Model.Slides)
+            {
+                slideIndex++;
+                <div class="swiper-slide">
+                    <div class="hero-slide" style="background-image:url('@slide.ImagePath')">
+                        <div class="container">
+                            <div class="hero-content" data-aos="fade-up">
+                                @if (slideIndex == 1)
+                                {
+                                    <h1>@slide.TitleAr</h1>
+                                }
+                                else
+                                {
+                                    <h2>@slide.TitleAr</h2>
+                                }
+                                @if (!string.IsNullOrWhiteSpace(slide.SubtitleAr))
+                                {
+                                    <p class="fs-5 mb-4">@slide.SubtitleAr</p>
+                                }
+                                @if (!string.IsNullOrWhiteSpace(slide.ButtonText))
+                                {
+                                    <a href="@slide.ButtonUrl" class="btn btn-success btn-lg rounded-pill px-4">@slide.ButtonText</a>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+        <div class="swiper-pagination"></div>
+        <div class="swiper-button-next"></div>
+        <div class="swiper-button-prev"></div>
+    </div>
+}
+else
+{
+    <div class="hero-slide" style="background-color:#1b5e20;">
+        <div class="container">
+            <div class="hero-content">
+                <h1>@Model.Company?.CompanyNameAr</h1>
+                <p class="fs-5 mb-4">منتجات زراعية عالية الجودة لخدمة المزارع المصري</p>
+                <a asp-controller="Products" asp-action="Index" class="btn btn-success btn-lg rounded-pill px-4">تصفح المنتجات</a>
+            </div>
+        </div>
+    </div>
+}
+
+<!-- Categories -->
+<section class="py-5">
+    <div class="container">
+        <div class="text-center" data-aos="fade-up">
+            <h2 class="section-title">أقسام منتجاتنا</h2>
+            <p class="section-subtitle">تصفح مجموعتنا المتنوعة من المنتجات الزراعية عالية الجودة</p>
+        </div>
+        <div class="row g-4">
+            @foreach (var cat in Model.Categories.Take(6))
+            {
+                <div class="col-lg-4 col-md-6" data-aos="fade-up">
+                    <a asp-controller="Products" asp-action="ByCategory" asp-route-slug="@cat.Slug" class="category-card d-block">
+                        <img src="@(string.IsNullOrWhiteSpace(cat.ImagePath) ? "/images/categories/default.jpg" : cat.ImagePath)" alt="@cat.NameAr" onerror="this.src='/images/placeholders/category.jpg'" />
+                        <div class="overlay">
+                            <h5>@cat.NameAr</h5>
+                        </div>
+                    </a>
+                </div>
+            }
+        </div>
+    </div>
+</section>
+
+<!-- Featured Products -->
+@if (Model.FeaturedProducts.Any())
+{
+    <section class="py-5 bg-light">
+        <div class="container">
+            <div class="text-center" data-aos="fade-up">
+                <h2 class="section-title">منتجات مميزة</h2>
+                <p class="section-subtitle">أفضل منتجاتنا الأكثر طلبًا من عملائنا</p>
+            </div>
+            <div class="row g-4">
+                @foreach (var product in Model.FeaturedProducts)
+                {
+                    <div class="col-lg-3 col-md-6" data-aos="fade-up">
+                        @await Html.PartialAsync("_ProductCard", product)
+                    </div>
+                }
+            </div>
+            <div class="text-center mt-4">
+                <a asp-controller="Products" asp-action="Index" class="btn btn-outline-success rounded-pill px-4">عرض كل المنتجات</a>
+            </div>
+        </div>
+    </section>
+}
+
+<!-- Why Us -->
+<section class="py-5">
+    <div class="container">
+        <div class="row g-4 text-center">
+            <div class="col-md-3" data-aos="fade-up">
+                <i class="fa-solid fa-award fs-1 text-success mb-3"></i>
+                <h5 class="fw-bold">جودة مضمونة</h5>
+                <p class="text-muted small">منتجات معتمدة ومطابقة للمواصفات</p>
+            </div>
+            <div class="col-md-3" data-aos="fade-up" data-aos-delay="100">
+                <i class="fa-solid fa-truck fs-1 text-success mb-3"></i>
+                <h5 class="fw-bold">توصيل سريع</h5>
+                <p class="text-muted small">لجميع محافظات الجمهورية</p>
+            </div>
+            <div class="col-md-3" data-aos="fade-up" data-aos-delay="200">
+                <i class="fa-brands fa-whatsapp fs-1 text-success mb-3"></i>
+                <h5 class="fw-bold">طلب سهل عبر واتساب</h5>
+                <p class="text-muted small">تواصل مباشر وسريع مع فريق المبيعات</p>
+            </div>
+            <div class="col-md-3" data-aos="fade-up" data-aos-delay="300">
+                <i class="fa-solid fa-headset fs-1 text-success mb-3"></i>
+                <h5 class="fw-bold">دعم فني متخصص</h5>
+                <p class="text-muted small">فريق من المهندسين الزراعيين</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Testimonials -->
+@* @if (Model.Testimonials.Any()) *@
+@* { *@
+@*     <section class="py-5 bg-light"> *@
+@*         <div class="container"> *@
+@*             <div class="text-center" data-aos="fade-up"> *@
+@*                 <h2 class="section-title">آراء عملائنا</h2> *@
+@*                 <p class="section-subtitle">ماذا يقول عملاؤنا عن منتجاتنا وخدماتنا</p> *@
+@*             </div> *@
+@*             <div class="swiper testimonials-swiper"> *@
+@*                 <div class="swiper-wrapper pb-5"> *@
+@*                     @foreach (var t in Model.Testimonials) *@
+@*                     { *@
+@*                         <div class="swiper-slide"> *@
+@*                             <div class="testimonial-card"> *@
+@*                                 <div class="stars mb-2"> *@
+@*                                     @for (int i = 0; i < t.Rating; i++) *@
+@*                                     { *@
+@*                                         <i class="fa-solid fa-star"></i> *@
+@*                                     } *@
+@*                                 </div> *@
+@*                                 <p class="mb-3">"@t.Content"</p> *@
+@*                                 <div class="d-flex align-items-center"> *@
+@*                                     <img src="@(string.IsNullOrWhiteSpace(t.ImagePath) ? "/images/placeholders/avatar.jpg" : t.ImagePath)" class="testimonial-avatar me-2" alt="@t.CustomerName" /> *@
+@*                                     <div> *@
+@*                                         <div class="fw-bold">@t.CustomerName</div> *@
+@*                                         <small class="text-muted">@t.CustomerTitle</small> *@
+@*                                     </div> *@
+@*                                 </div> *@
+@*                             </div> *@
+@*                         </div> *@
+@*                     } *@
+@*                 </div> *@
+@*                 <div class="swiper-pagination"></div> *@
+@*             </div> *@
+@*         </div> *@
+@*     </section> *@
+@* } *@
+
+<!-- CTA -->
+<section class="py-5 text-center text-white" style="background: linear-gradient(135deg, var(--primary-dark), var(--primary-color));">
+    <div class="container" data-aos="zoom-in">
+        <h2 class="fw-bold mb-3">هل لديك استفسار عن منتجاتنا؟</h2>
+        <p class="mb-4">فريقنا جاهز لمساعدتك عبر واتساب على مدار الأسبوع</p>
+        <a class="btn btn-whatsapp btn-lg rounded-pill px-5" target="_blank" rel="noopener"
+           href="https://wa.me/@Model.Company?.WhatsAppNumber?text=@Uri.EscapeDataString("مرحبًا، أرغب في الاستفسار عن منتجاتكم")">
+            <i class="fa-brands fa-whatsapp"></i> تواصل معنا الآن
+        </a>
+    </div>
+</section>
+
+@section Scripts {
+    <script>
+        new Swiper('.hero-swiper', {
+            loop: true,
+            autoplay: { delay: 5000 },
+            pagination: { el: '.swiper-pagination', clickable: true },
+            navigation: { nextEl: '.swiper-button-next', prevEl: '.swiper-button-prev' }
+        });
+        new Swiper('.testimonials-swiper', {
+            slidesPerView: 1,
+            spaceBetween: 20,
+            pagination: { el: '.swiper-pagination', clickable: true },
+            breakpoints: {
+                768: { slidesPerView: 2 },
+                992: { slidesPerView: 3 }
+            }
+        });
+    </script>
+}

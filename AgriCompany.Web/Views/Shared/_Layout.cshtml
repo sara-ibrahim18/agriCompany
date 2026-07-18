@@ -1,0 +1,310 @@
+@using AgriCompany.Web.Services
+@inject ICompanyInfoService CompanyInfoService
+@inject ICategoryService CategoryService
+@inject IWebsiteSettingService WebsiteSettingService
+@{
+    var company = await CompanyInfoService.GetAsync();
+    var navCategories = await CategoryService.GetActiveAsync();
+    var siteSettings = await WebsiteSettingService.GetAsync();
+    var whatsappNumber = company.WhatsAppNumber?.Replace("+", "").Replace(" ", "") ?? "";
+}
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    @{
+        var pageTitle = ViewData["Title"] != null ? $"{ViewData["Title"]} | {siteSettings.SiteTitle}" : siteSettings.SiteTitle;
+        var pageDescription = ViewData["MetaDescription"] as string ?? siteSettings.MetaDescription ?? "";
+        var pageKeywords = ViewData["MetaKeywords"] as string ?? siteSettings.MetaKeywords ?? "";
+        var baseUrl = $"{Context.Request.Scheme}://{Context.Request.Host}";
+        var canonicalUrl = $"{baseUrl}{Context.Request.Path}";
+        var ogImageRaw = ViewData["OgImage"] as string ?? company.LogoPath ?? "/images/og-default.jpg";
+        var ogImageUrl = ogImageRaw.StartsWith("http") ? ogImageRaw : $"{baseUrl}{ogImageRaw}";
+        var socialLinks = new[] { company.FacebookUrl, company.InstagramUrl, company.YoutubeUrl, company.TwitterUrl }
+        .Where(u => !string.IsNullOrWhiteSpace(u));
+        var sameAsJson = string.Join(",", socialLinks.Select(u => System.Text.Json.JsonSerializer.Serialize(u)));
+    }
+
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@pageTitle</title>
+    <meta name="description" content="@pageDescription" />
+    <meta name="keywords" content="@pageKeywords" />
+    <meta name="robots" content="@(ViewData["Robots"] as string ?? "index, follow")" />
+    <meta name="author" content="@company.CompanyNameAr" />
+    <link rel="canonical" href="@canonicalUrl" />
+    <!-- Favicon -->
+    @if (!string.IsNullOrWhiteSpace(company.LogoPath))
+    {
+        <link rel="icon" href="@company.LogoPath" type="image/svg+xml" />
+        <link rel="shortcut icon" href="@company.LogoPath" type="image/svg+xml" />
+        <link rel="apple-touch-icon" href="@company.LogoPath" />
+    }
+    <!-- Open Graph -->
+    <meta property="og:title" content="@pageTitle" />
+    <meta property="og:description" content="@pageDescription" />
+    <meta property="og:image" content="@ogImageUrl" />
+    <meta property="og:url" content="@canonicalUrl" />
+    <meta property="og:type" content="website" />
+    <meta property="og:locale" content="ar_EG" />
+    <meta property="og:site_name" content="@company.CompanyNameAr" />
+
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="@pageTitle" />
+    <meta name="twitter:description" content="@pageDescription" />
+    <meta name="twitter:image" content="@ogImageUrl" />
+
+    <!-- Schema.org -->
+    <script type="application/ld+json">
+        @Html.Raw(@"
+        {
+            ""@context"": ""https://schema.org"",
+            ""@type"": ""Organization"",
+            ""name"": " + System.Text.Json.JsonSerializer.Serialize(company.CompanyNameAr ?? "البركة للتنمية الزراعية") + @",
+            ""url"": " + System.Text.Json.JsonSerializer.Serialize(baseUrl) + @",
+            ""description"": " + System.Text.Json.JsonSerializer.Serialize(company.AboutText ?? "") + @",
+            ""logo"": " + System.Text.Json.JsonSerializer.Serialize(!string.IsNullOrWhiteSpace(company.LogoPath) ? baseUrl + company.LogoPath : "") + @",
+            ""telephone"": " + System.Text.Json.JsonSerializer.Serialize(company.Phone) + @",
+            ""email"": " + System.Text.Json.JsonSerializer.Serialize(company.Email) + @",
+            ""address"": {
+                ""@type"": ""PostalAddress"",
+                ""streetAddress"": " + System.Text.Json.JsonSerializer.Serialize(company.Address ?? "") + @",
+                ""addressCountry"": ""EG""
+            },
+            ""sameAs"": [" + sameAsJson + @"]
+        }")
+    </script>
+
+    <!-- CSS Files -->
+    <link rel="stylesheet" href="~/lib/cairo-font/arabic.css" asp-append-version="true">
+    <link rel="stylesheet" href="~/lib/bootstrap/css/bootstrap.rtl.min.css" asp-append-version="true">
+    <link rel="stylesheet" href="~/lib/fontawesome/css/all.min.css" asp-append-version="true">
+    <link rel="stylesheet" href="~/lib/aos/aos.css" asp-append-version="true">
+    <link rel="stylesheet" href="~/lib/swiper/swiper-bundle.min.css" asp-append-version="true">
+    <link rel="stylesheet" href="~/lib/toastr/toastr.min.css" asp-append-version="true">
+    <link rel="stylesheet" href="~/lib/lightbox2/css/lightbox.min.css" asp-append-version="true">
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+
+    @if (!string.IsNullOrWhiteSpace(siteSettings.PrimaryColor))
+    {
+        <style>        :root {
+                --primary-color: @siteSettings.PrimaryColor;
+            }</style>
+    }
+    @await RenderSectionAsync("Styles", required: false)
+</head>
+<body>
+
+    <!-- Top bar -->
+    <div class="top-bar d-none d-md-block">
+        <div class="container d-flex justify-content-between align-items-center py-2">
+            <div class="top-bar-info">
+                <span class="me-3"><i class="fa-solid fa-phone"></i> @company.Phone</span>
+                @if (!string.IsNullOrWhiteSpace(company.Email))
+                {
+                    <span><i class="fa-solid fa-envelope"></i> @company.Email</span>
+                }
+            </div>
+            <div class="top-bar-social">
+                @if (!string.IsNullOrWhiteSpace(company.FacebookUrl))
+                {
+                    <a href="@company.FacebookUrl" target="_blank" rel="noopener"><i class="fa-brands fa-facebook"></i></a>
+                }
+                @if (!string.IsNullOrWhiteSpace(company.InstagramUrl))
+                {
+                    <a href="@company.InstagramUrl" target="_blank" rel="noopener"><i class="fa-brands fa-instagram"></i></a>
+                }
+                @if (!string.IsNullOrWhiteSpace(company.TwitterUrl))
+                {
+                    <a href="@company.TwitterUrl" target="_blank" rel="noopener"><i class="fa-brands fa-x-twitter"></i></a>
+                }
+                @if (!string.IsNullOrWhiteSpace(company.YoutubeUrl))
+                {
+                    <a href="@company.YoutubeUrl" target="_blank" rel="noopener"><i class="fa-brands fa-youtube"></i></a>
+                }
+            </div>
+        </div>
+    </div>
+
+    <!-- Main navbar -->
+   <!-- Main navbar -->
+<nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm sticky-top main-navbar">
+    <div class="container">
+        <a class="navbar-brand fw-bold" asp-controller="Home" asp-action="Index">
+            @if (!string.IsNullOrWhiteSpace(company.LogoPath))
+            {
+                <img src="@company.LogoPath" alt="@company.CompanyNameAr" height="45" class="me-2" />
+            }
+            else
+            {
+                <i class="fa-solid fa-leaf text-success"></i>
+            }
+            <span>@company.CompanyNameAr</span>
+        </a>
+
+        <!-- Hamburger Button -->
+        <button class="navbar-toggler" type="button" data-bs-toggle="offcanvas" data-bs-target="#mobileMenu" aria-controls="mobileMenu">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <!-- Desktop Menu -->
+        <div class="collapse navbar-collapse d-none d-lg-block" id="mainNav">
+            <ul class="navbar-nav ms-auto mb-2 mb-lg-0 text-center">
+                <li class="nav-item"><a class="nav-link" asp-controller="Home" asp-action="Index">الرئيسية</a></li>
+                <li class="nav-item"><a class="nav-link" asp-controller="About" asp-action="Index">من نحن</a></li>
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">الأقسام</a>
+                    <ul class="dropdown-menu">
+                        @foreach (var cat in navCategories)
+                        {
+                            <li><a class="dropdown-item" asp-controller="Products" asp-action="ByCategory" asp-route-slug="@cat.Slug">@cat.NameAr</a></li>
+                        }
+                        <li><hr class="dropdown-divider" /></li>
+                        <li><a class="dropdown-item" asp-controller="Categories" asp-action="Index">كل الأقسام</a></li>
+                    </ul>
+                </li>
+                <li class="nav-item"><a class="nav-link" asp-controller="Products" asp-action="Index">المنتجات</a></li>
+                <li class="nav-item"><a class="nav-link" asp-controller="Faq" asp-action="Index">الأسئلة الشائعة</a></li>
+                <li class="nav-item"><a class="nav-link" asp-controller="Contact" asp-action="Index">تواصل معنا</a></li>
+            </ul>
+        </div>
+
+     
+        <a class="btn btn-success rounded-pill px-4 ms-lg-3 d-none d-lg-inline" target="_blank" rel="noopener"
+           href="https://wa.me/@whatsappNumber?text=@Uri.EscapeDataString("مرحبًا، أرغب في الاستفسار عن منتجاتكم")">
+            <i class="fa-brands fa-whatsapp"></i> واتساب
+        </a>
+    </div>
+</nav>
+
+   
+    <div class="offcanvas offcanvas-start" tabindex="-1" id="mobileMenu" aria-labelledby="mobileMenuLabel"
+         style="background: #1e3a2f; color: #e0f2e9; width: 280px;">
+        <div class="offcanvas-header" style="background: #1e3a2f;">
+            <div class="d-flex align-items-center">
+                <i class="fa-solid fa-leaf text-success me-2"></i>
+                <h5 class="offcanvas-title fw-bold mb-0" id="mobileMenuLabel">
+                    @company.CompanyNameAr
+                </h5>
+            </div>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+        </div>
+        <div class="offcanvas-body p-0">
+            <nav class="nav flex-column">
+                <a class="nav-link text-light py-3 px-4" asp-controller="Home" asp-action="Index">
+                    <i class="fa-solid fa-home me-3"></i> الرئيسية
+                </a>
+                <a class="nav-link text-light py-3 px-4" asp-controller="About" asp-action="Index">
+                    <i class="fa-solid fa-info-circle me-3"></i> من نحن
+                </a>
+                <a class="nav-link text-light py-3 px-4" asp-controller="Products" asp-action="Index">
+                    <i class="fa-solid fa-box me-3"></i> المنتجات
+                </a>
+                <a class="nav-link text-light py-3 px-4 d-flex justify-content-between align-items-center" href="#"
+                   data-bs-toggle="collapse" data-bs-target="#mobileCategoriesCollapse" role="button"
+                   aria-expanded="false" aria-controls="mobileCategoriesCollapse">
+                    <span><i class="fa-solid fa-list me-3"></i> الأقسام</span>
+                    <i class="fa-solid fa-chevron-down small"></i>
+                </a>
+                <div class="collapse" id="mobileCategoriesCollapse">
+                    @foreach (var cat in navCategories)
+                    {
+                        <a class="nav-link text-light py-2 ps-5" asp-controller="Products" asp-action="ByCategory" asp-route-slug="@cat.Slug">@cat.NameAr</a>
+                    }
+                </div>
+                <a class="nav-link text-light py-3 px-4" asp-controller="Faq" asp-action="Index">
+                    <i class="fa-solid fa-question-circle me-3"></i> الأسئلة الشائعة
+                </a>
+                <a class="nav-link text-light py-3 px-4" asp-controller="Contact" asp-action="Index">
+                    <i class="fa-solid fa-envelope me-3"></i> تواصل معنا
+                </a>
+            </nav>
+        </div>
+        <div class="p-4 border-top border-success mt-auto">
+            <a class="btn btn-success w-100 py-3 rounded-pill" target="_blank" rel="noopener"
+               href="https://wa.me/@whatsappNumber?text=@Uri.EscapeDataString("مرحبًا، أرغب في الاستفسار عن منتجاتكم")">
+                <i class="fa-brands fa-whatsapp me-2"></i> تواصل عبر واتساب
+            </a>
+        </div>
+    </div>
+    <main>
+        @RenderBody()
+    </main>
+
+
+    <footer class="site-footer text-white pt-5 pb-3 mt-5">
+        <div class="container">
+            <div class="row g-4">
+                <div class="col-lg-4 col-md-6">
+                    <h5 class="fw-bold mb-3">@company.CompanyNameAr</h5>
+                    <p class="text-white-50">@company.AboutText</p>
+                    <div class="footer-social mt-3">
+                        @if (!string.IsNullOrWhiteSpace(company.FacebookUrl))
+                        {<a href="@company.FacebookUrl" target="_blank" rel="noopener"><i class="fa-brands fa-facebook"></i></a>}
+                        @if (!string.IsNullOrWhiteSpace(company.InstagramUrl))
+                        {<a href="@company.InstagramUrl" target="_blank" rel="noopener"><i class="fa-brands fa-instagram"></i></a>}
+                        @if (!string.IsNullOrWhiteSpace(company.YoutubeUrl))
+                        {<a href="@company.YoutubeUrl" target="_blank" rel="noopener"><i class="fa-brands fa-youtube"></i></a>}
+                    </div>
+                </div>
+                <div class="col-lg-2 col-md-6">
+                    <h6 class="fw-bold mb-3">روابط سريعة</h6>
+                    <ul class="list-unstyled footer-links">
+                        <li><a asp-controller="Home" asp-action="Index">الرئيسية</a></li>
+                        <li><a asp-controller="About" asp-action="Index">من نحن</a></li>
+                        <li><a asp-controller="Products" asp-action="Index">المنتجات</a></li>
+                        <li><a asp-controller="Contact" asp-action="Index">تواصل معنا</a></li>
+                    </ul>
+                </div>
+                <div class="col-lg-3 col-md-6">
+                    <h6 class="fw-bold mb-3">الأقسام</h6>
+                    <ul class="list-unstyled footer-links">
+                        @foreach (var cat in navCategories.Take(5))
+                        {
+                            <li><a asp-controller="Products" asp-action="ByCategory" asp-route-slug="@cat.Slug">@cat.NameAr</a></li>
+                        }
+                    </ul>
+                </div>
+                <div class="col-lg-3 col-md-6">
+                    <h6 class="fw-bold mb-3">معلومات التواصل</h6>
+                    <ul class="list-unstyled footer-links">
+                        <li><i class="fa-solid fa-location-dot me-2"></i> @company.Address</li>
+                        <li><i class="fa-solid fa-phone me-2"></i> @company.Phone</li>
+                        @if (!string.IsNullOrWhiteSpace(company.Email))
+                        {
+                            <li><i class="fa-solid fa-envelope me-2"></i> @company.Email</li>
+                        }
+                        @if (!string.IsNullOrWhiteSpace(company.WorkingHours))
+                        {
+                            <li><i class="fa-solid fa-clock me-2"></i> @company.WorkingHours</li>
+                        }
+                    </ul>
+                </div>
+            </div>
+            <hr class="border-secondary mt-4" />
+            <div class="text-center text-white-50 small">
+                &copy; @DateTime.Now.Year @company.CompanyNameAr - @siteSettings.FooterText
+            </div>
+        </div>
+    </footer>
+
+
+    <a class="whatsapp-float" target="_blank" rel="noopener"
+       href="https://wa.me/@whatsappNumber?text=@Uri.EscapeDataString("مرحبًا، أرغب في الاستفسار عن منتجاتكم")">
+        <i class="fa-brands fa-whatsapp"></i>
+    </a>
+
+
+    <script src="~/lib/bootstrap/js/bootstrap.bundle.min.js" asp-append-version="true"></script>
+    <script src="~/lib/jquery/jquery.min.js" asp-append-version="true"></script>
+    <script src="~/lib/aos/aos.js" asp-append-version="true"></script>
+    <script src="~/lib/swiper/swiper-bundle.min.js" asp-append-version="true"></script>
+    <script src="~/lib/toastr/toastr.min.js" asp-append-version="true"></script>
+    <script src="~/lib/lightbox2/js/lightbox.min.js" asp-append-version="true"></script>
+    <script src="~/lib/sweetalert2/sweetalert2.all.min.js" asp-append-version="true"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    <script src="~/js/whatsapp.js" asp-append-version="true"></script>
+    @await Html.PartialAsync("_Notifications")
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

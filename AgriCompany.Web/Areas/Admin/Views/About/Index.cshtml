@@ -1,0 +1,118 @@
+@model CompanyInformation
+@{
+    ViewData["Title"] = "بيانات الشركة";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h3 class="fw-bold mb-0">بيانات الشركة</h3>
+</div>
+
+<div class="admin-card">
+    <form asp-area="Admin" asp-controller="About" asp-action="Index" method="post" enctype="multipart/form-data">
+        @Html.AntiForgeryToken()
+        <input type="hidden" asp-for="Id" />
+        <div asp-validation-summary="All" class="text-danger mb-3"></div>
+
+        @if (!string.IsNullOrWhiteSpace(Model.LogoPath))
+        {
+            <div class="mb-3">
+                <img src="@Model.LogoPath" class="image-preview-box" />
+            </div>
+        }
+
+        <div class="mb-3">
+            <label class="form-label">شعار الشركة (Logo)</label>
+            <input type="file" name="logo" class="form-control" accept="image/*" />
+        </div>
+
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                <label asp-for="CompanyNameAr" class="form-label"></label>
+                <input asp-for="CompanyNameAr" class="form-control" />
+                <span asp-validation-for="CompanyNameAr" class="text-danger small"></span>
+            </div>
+            <div class="col-md-6 mb-3">
+                <label asp-for="CompanyNameEn" class="form-label"></label>
+                <input asp-for="CompanyNameEn" class="form-control" />
+                <span asp-validation-for="CompanyNameEn" class="text-danger small"></span>
+            </div>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="AboutText" class="form-label"></label>
+            <textarea asp-for="AboutText" class="form-control" rows="4"></textarea>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                <label asp-for="Vision" class="form-label"></label>
+                <textarea asp-for="Vision" class="form-control" rows="3"></textarea>
+            </div>
+            <div class="col-md-6 mb-3">
+                <label asp-for="Mission" class="form-label"></label>
+                <textarea asp-for="Mission" class="form-control" rows="3"></textarea>
+            </div>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="Address" class="form-label"></label>
+            <input asp-for="Address" class="form-control" />
+        </div>
+
+        <div class="row">
+            <div class="col-md-4 mb-3">
+                <label asp-for="Phone" class="form-label"></label>
+                <input asp-for="Phone" class="form-control" />
+                <span asp-validation-for="Phone" class="text-danger small"></span>
+            </div>
+            <div class="col-md-4 mb-3">
+                <label asp-for="WhatsAppNumber" class="form-label"></label>
+                <input asp-for="WhatsAppNumber" class="form-control" placeholder="201000000000" />
+                <span asp-validation-for="WhatsAppNumber" class="text-danger small"></span>
+                <small class="text-muted">بالصيغة الدولية بدون + أو أصفار زيادة</small>
+            </div>
+            <div class="col-md-4 mb-3">
+                <label asp-for="Email" class="form-label"></label>
+                <input asp-for="Email" class="form-control" />
+                <span asp-validation-for="Email" class="text-danger small"></span>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                <label asp-for="FacebookUrl" class="form-label"></label>
+                <input asp-for="FacebookUrl" class="form-control" />
+            </div>
+            <div class="col-md-6 mb-3">
+                <label asp-for="InstagramUrl" class="form-label"></label>
+                <input asp-for="InstagramUrl" class="form-control" />
+            </div>
+            <div class="col-md-6 mb-3">
+                <label asp-for="TwitterUrl" class="form-label"></label>
+                <input asp-for="TwitterUrl" class="form-control" />
+            </div>
+            <div class="col-md-6 mb-3">
+                <label asp-for="YoutubeUrl" class="form-label"></label>
+                <input asp-for="YoutubeUrl" class="form-control" />
+            </div>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="WorkingHours" class="form-label"></label>
+            <input asp-for="WorkingHours" class="form-control" />
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="GoogleMapsEmbedUrl" class="form-label"></label>
+            <textarea asp-for="GoogleMapsEmbedUrl" class="form-control" rows="2" placeholder="رابط Embed من جوجل مابس"></textarea>
+        </div>
+
+        <button type="submit" class="btn btn-admin-primary rounded-pill px-4">
+            <i class="fa-solid fa-save"></i> حفظ البيانات
+        </button>
+    </form>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

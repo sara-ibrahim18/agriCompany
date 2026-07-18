@@ -1,0 +1,217 @@
+@model Product
+@{
+    ViewData["Title"] = "تعديل منتج";
+    var categories = ViewBag.Categories as List<Category> ?? new List<Category>();
+    var sizesCsv = string.Join(", ", Model.Sizes.OrderBy(s => s.DisplayOrder).Select(s => s.SizeName));
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h3 class="fw-bold mb-0">تعديل منتج: @Model.NameAr</h3>
+    <a asp-area="Admin" asp-controller="Products" asp-action="Index" class="btn btn-outline-secondary rounded-pill px-4">
+        <i class="fa-solid fa-arrow-right"></i> رجوع
+    </a>
+</div>
+
+@if (Model.Images.Any())
+{
+    <div class="admin-card mb-4">
+        <h6 class="fw-bold mb-3">صور المنتج الحالية</h6>
+        <div class="d-flex flex-wrap gap-3">
+            @foreach (var img in Model.Images.OrderByDescending(i => i.IsMain).ThenBy(i => i.DisplayOrder))
+            {
+                <div class="text-center">
+                    <img src="@img.ImagePath" class="image-preview-box mb-2" />
+                    <div class="d-flex gap-1 justify-content-center">
+                        @if (!img.IsMain)
+                        {
+                            <form asp-area="Admin" asp-controller="Products" asp-action="SetMainImage" method="post">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="imageId" value="@img.Id" />
+                                <input type="hidden" name="productId" value="@Model.Id" />
+                                <button type="submit" class="btn btn-sm btn-outline-success" title="تعيين كصورة رئيسية">
+                                    <i class="fa-solid fa-star"></i>
+                                </button>
+                            </form>
+                        }
+                        else
+                        {
+                            <span class="badge bg-success align-self-center">رئيسية</span>
+                        }
+                        <form asp-area="Admin" asp-controller="Products" asp-action="DeleteImage" method="post">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="imageId" value="@img.Id" />
+                            <input type="hidden" name="productId" value="@Model.Id" />
+                            <button type="submit" class="btn btn-sm btn-outline-danger" title="حذف الصورة">
+                                <i class="fa-solid fa-trash"></i>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+}
+
+<div class="admin-card">
+    <form asp-area="Admin" asp-controller="Products" asp-action="Edit" asp-route-id="@Model.Id" method="post" enctype="multipart/form-data">
+        @Html.AntiForgeryToken()
+        <input type="hidden" asp-for="Id" />
+        <input type="hidden" asp-for="Slug" />
+    
+
+        <div asp-validation-summary="All" class="text-danger mb-3"></div>
+        <p class="text-muted small mb-3">الحقول المعلّم عليها بـ <span class="text-danger">*</span> إجبارية، والباقي اختياري.</p>
+
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                <label asp-for="NameAr" class="form-label">الاسم بالعربية <span class="text-danger">*</span></label>
+                <input asp-for="NameAr" class="form-control" />
+                <span asp-validation-for="NameAr" class="text-danger small"></span>
+            </div>
+            <div class="col-md-6 mb-3">
+                <label asp-for="NameEn" class="form-label">الاسم بالإنجليزية <span class="text-muted small">(اختياري)</span></label>
+                <input asp-for="NameEn" class="form-control" />
+                <span asp-validation-for="NameEn" class="text-danger small"></span>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-4 mb-3">
+                <label asp-for="Code" class="form-label">كود المنتج <span class="text-muted small">(بيتولد تلقائيًا)</span></label>
+                <input asp-for="Code" class="form-control" readonly />
+            </div>
+            <div class="col-md-4 mb-3">
+                <label asp-for="CategoryId" class="form-label">القسم <span class="text-danger">*</span></label>
+                <select asp-for="CategoryId" class="form-select">
+                    @foreach (var cat in categories)
+                    {
+                        if (cat.Id == Model.CategoryId)
+                        {
+                            <option value="@cat.Id" selected>@cat.NameAr</option>
+                        }
+                        else
+                        {
+                            <option value="@cat.Id">@cat.NameAr</option>
+                        }
+                    }
+                </select>
+                <span asp-validation-for="CategoryId" class="text-danger small"></span>
+            </div>
+            
+        </div>
+
+        <div class="row">
+           
+            <div class="col-md-4 mb-3">
+                <label asp-for="DisplayOrder" class="form-label"></label>
+                <input asp-for="DisplayOrder" class="form-control" type="number" />
+            </div>
+            <div class="col-md-4 mb-3 d-flex align-items-end gap-4">
+                <!-- Is Available -->
+                <div class="form-check">
+                    <input type="checkbox" asp-for="IsAvailable" value="true" class="form-check-input" />
+                    <input type="hidden" asp-for="IsAvailable" value="false" />
+                    <label asp-for="IsAvailable" class="form-check-label"></label>
+                </div>
+
+                <!-- Is Featured -->
+                <div class="form-check">
+                    <input type="checkbox" asp-for="IsFeatured" value="true" class="form-check-input" />
+                    <input type="hidden" asp-for="IsFeatured" value="false" />
+                    <label asp-for="IsFeatured" class="form-check-label"></label>
+                </div>
+            </div>
+        </div>
+
+
+        <div class="mb-3">
+            <label asp-for="Description" class="form-label">الوصف <span class="text-danger">*</span></label>
+            <textarea asp-for="Description" class="form-control" rows="3"></textarea>
+            <span asp-validation-for="Description" class="text-danger small"></span>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="Benefits" class="form-label">الفوائد <span class="text-muted small">(اختياري)</span></label>
+            <textarea asp-for="Benefits" class="form-control" rows="3"></textarea>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="UsageInstructions" class="form-label">طريقة الاستخدام <span class="text-muted small">(اختياري)</span></label>
+            <textarea asp-for="UsageInstructions" class="form-control" rows="3"></textarea>
+        </div>
+
+        <div class="mb-4">
+            <label class="form-label">الأحجام والأسعار</label>
+            <div id="sizes-container">
+                @foreach (var size in Model.Sizes.OrderBy(s => s.DisplayOrder))
+                {
+                    <div class="size-row mb-3">
+                        <div class="row">
+                            <div class="col-md-4">
+                                <input type="text" name="SizeName" value="@size.SizeName" class="form-control" placeholder="اسم الحجم" />
+                            </div>
+                            <div class="col-md-4">
+                                <input type="number" name="SizePrice" value="@size.Price" class="form-control" step="0.01" placeholder="السعر" />
+                            </div>
+                            <div class="col-md-2">
+                                <div class="form-check mt-2">
+                                    <input type="checkbox" name="SizeAvailable" value="on" checked="@size.IsAvailable" class="form-check-input" />
+                                    <label class="form-check-label">متاح</label>
+                                </div>
+                            </div>
+                            <div class="col-md-2">
+                                <button type="button" class="btn btn-danger btn-sm mt-1" onclick="removeSizeRow(this)">حذف</button>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+            <button type="button" class="btn btn-success btn-sm" onclick="addSizeRow()">+ إضافة حجم جديد</button>
+        </div>
+
+        <div class="mb-4">
+            <label class="form-label">إضافة صور جديدة (اختياري)</label>
+            <input type="file" name="newImages" class="form-control" accept="image/*" multiple />
+        </div>
+
+        <button type="submit" class="btn btn-admin-primary rounded-pill px-4">
+            <i class="fa-solid fa-save"></i> حفظ التعديلات
+        </button>
+    </form>
+</div>
+
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        function addSizeRow() {
+            const container = document.getElementById('sizes-container');
+            const row = document.createElement('div');
+            row.className = 'size-row mb-3';
+            row.innerHTML = `
+                <div class="row">
+                    <div class="col-md-4">
+                        <input type="text" name="SizeName" class="form-control" placeholder="اسم الحجم" />
+                    </div>
+                    <div class="col-md-4">
+                        <input type="number" name="SizePrice" class="form-control" step="0.01" placeholder="السعر" />
+                    </div>
+                    <div class="col-md-2">
+                        <div class="form-check mt-2">
+                            <input type="checkbox" name="SizeAvailable" checked class="form-check-input" />
+                            <label class="form-check-label">متاح</label>
+                        </div>
+                    </div>
+                    <div class="col-md-2">
+                        <button type="button" class="btn btn-danger btn-sm mt-1" onclick="removeSizeRow(this)">حذف</button>
+                    </div>
+                </div>
+            `;
+            container.appendChild(row);
+        }
+
+        function removeSizeRow(btn) {
+            btn.closest('.size-row').remove();
+        }
+    </script>
+}

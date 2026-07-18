@@ -1,0 +1,81 @@
+@model PagedResult<ContactMessage>
+@{
+    ViewData["Title"] = "رسائل التواصل";
+}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h3 class="fw-bold mb-0">رسائل التواصل</h3>
+    <div class="btn-group">
+        <a asp-area="Admin" asp-controller="ContactMessages" asp-action="Index" class="btn btn-outline-secondary @(ViewBag.UnreadOnly == null ? "active" : "")">الكل</a>
+        <a asp-area="Admin" asp-controller="ContactMessages" asp-action="Index" asp-route-unreadOnly="true" class="btn btn-outline-secondary @(ViewBag.UnreadOnly == true ? "active" : "")">غير مقروءة فقط</a>
+    </div>
+</div>
+
+<div class="admin-card">
+    <div class="table-responsive">
+        <table class="table table-hover align-middle">
+            <thead>
+                <tr>
+                    <th>الاسم</th>
+                    <th>الهاتف</th>
+                    <th>الموضوع</th>
+                    <th>التاريخ</th>
+                    <th>الحالة</th>
+                    <th>إجراءات</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var m in Model.Items)
+                {
+                    <tr class="@(!m.IsRead ? "fw-bold" : "")">
+                        <td>@m.FullName</td>
+                        <td>@m.Phone</td>
+                        <td>@m.Subject</td>
+                        <td>@m.CreatedAt.ToString("dd/MM/yyyy HH:mm")</td>
+                        <td>
+                            @if (m.IsRead)
+                            {
+                                <span class="badge bg-light text-dark">مقروءة</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-danger">جديدة</span>
+                            }
+                        </td>
+                        <td>
+                            <a asp-area="Admin" asp-controller="ContactMessages" asp-action="Details" asp-route-id="@m.Id" class="btn btn-sm btn-outline-primary">
+                                <i class="fa-solid fa-eye"></i>
+                            </a>
+                            <button type="button" class="btn btn-sm btn-outline-danger"
+                                    data-item-name="@m.Subject" data-form-id="delete-form-@m.Id"
+                                    onclick="confirmDeleteEl(this)">
+                                <i class="fa-solid fa-trash"></i>
+                            </button>
+                            <form id="delete-form-@m.Id" asp-area="Admin" asp-controller="ContactMessages" asp-action="Delete" asp-route-id="@m.Id" method="post" class="d-none">
+                                @Html.AntiForgeryToken()
+                            </form>
+                        </td>
+                    </tr>
+                }
+                @if (!Model.Items.Any())
+                {
+                    <tr><td colspan="6" class="text-center text-muted py-4">لا توجد رسائل</td></tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    @if (Model.TotalPages > 1)
+    {
+        <nav>
+            <ul class="pagination justify-content-center mt-3">
+                @for (int i = 1; i <= Model.TotalPages; i++)
+                {
+                    <li class="page-item @(i == Model.PageNumber ? "active" : "")">
+                        <a class="page-link" asp-area="Admin" asp-controller="ContactMessages" asp-action="Index"
+                           asp-route-unreadOnly="@ViewBag.UnreadOnly" asp-route-page="@i">@i</a>
+                    </li>
+                }
+            </ul>
+        </nav>
+    }
+</div>

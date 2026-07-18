@@ -1,0 +1,115 @@
+@model PagedResult<Product>
+@{
+    ViewData["Title"] = "المنتجات";
+    var categories = ViewBag.Categories as List<Category> ?? new List<Category>();
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h3 class="fw-bold mb-0">إدارة المنتجات</h3>
+    <a asp-area="Admin" asp-controller="Products" asp-action="Create" class="btn btn-admin-primary rounded-pill px-4">
+        <i class="fa-solid fa-plus"></i> إضافة منتج جديد
+    </a>
+</div>
+
+<div class="admin-card mb-4">
+    <form method="get" class="row g-3">
+        <div class="col-md-5">
+            <input type="text" name="search" value="@ViewBag.Search" class="form-control" placeholder="بحث بالاسم أو الكود..." />
+        </div>
+        <div class="col-md-4">
+            <select name="categoryId" class="form-select">
+                <option value="">كل الأقسام</option>
+                @foreach (var cat in categories)
+                {
+                    if ((int?)ViewBag.CategoryId == cat.Id)
+                    {
+                        <option value="@cat.Id" selected>@cat.NameAr</option>
+                    }
+                    else
+                    {
+                        <option value="@cat.Id">@cat.NameAr</option>
+                    }
+                }
+            </select>
+        </div>
+        <div class="col-md-3">
+            <button type="submit" class="btn btn-admin-primary w-100"><i class="fa-solid fa-search"></i> بحث</button>
+        </div>
+    </form>
+</div>
+
+<div class="admin-card">
+    <div class="table-responsive">
+        <table class="table table-hover align-middle">
+            <thead>
+                <tr>
+                    <th>الصورة</th>
+                    <th>الاسم</th>
+                    <th>الكود</th>
+                    <th>القسم</th>
+                    <th>السعر</th>
+                    <th>الحالة</th>
+                    <th>إجراءات</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var p in Model.Items)
+                {
+                    <tr>
+                        <td><img src="@(p.MainImagePath ?? "/images/placeholders/thumb.jpg")" class="thumb" /></td>
+                        <td>@p.NameAr</td>
+                        <td>@p.Code</td>
+                        <td>@p.Category?.NameAr</td>
+  
+                        <td>@(p.Sizes.Any() ? p.Sizes.Min(s => s.Price).ToString("N0") : "غير محدد")</td>
+                        <td>
+                            <form asp-area="Admin" asp-controller="Products" asp-action="ToggleAvailability" asp-route-id="@p.Id" method="post" class="d-inline">
+                                @Html.AntiForgeryToken()
+                                @if (p.IsAvailable)
+                                {
+                                    <button type="submit" class="badge bg-success border-0">متاح</button>
+                                }
+                                else
+                                {
+                                    <button type="submit" class="badge bg-secondary border-0">غير متاح</button>
+                                }
+                            </form>
+                        </td>
+                        <td>
+                            <a asp-area="Admin" asp-controller="Products" asp-action="Edit" asp-route-id="@p.Id" class="btn btn-sm btn-outline-primary">
+                                <i class="fa-solid fa-pen"></i>
+                            </a>
+                            <button type="button" class="btn btn-sm btn-outline-danger"
+                                    data-item-name="@p.NameAr" data-form-id="delete-form-@p.Id"
+                                    onclick="confirmDeleteEl(this)">
+                                <i class="fa-solid fa-trash"></i>
+                            </button>
+                            <form id="delete-form-@p.Id" asp-area="Admin" asp-controller="Products" asp-action="Delete" asp-route-id="@p.Id" method="post" class="d-none">
+                                @Html.AntiForgeryToken()
+                            </form>
+                        </td>
+                    </tr>
+                }
+                @if (!Model.Items.Any())
+                {
+                    <tr><td colspan="7" class="text-center text-muted py-4">لا توجد منتجات مطابقة</td></tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    @if (Model.TotalPages > 1)
+    {
+        <nav>
+            <ul class="pagination justify-content-center mt-3">
+                @for (int i = 1; i <= Model.TotalPages; i++)
+                {
+                    <li class="page-item @(i == Model.PageNumber ? "active" : "")">
+                        <a class="page-link" asp-area="Admin" asp-controller="Products" asp-action="Index"
+                           asp-route-search="@ViewBag.Search" asp-route-categoryId="@ViewBag.CategoryId" asp-route-page="@i">@i</a>
+                    </li>
+                }
+            </ul>
+        </nav>
+    }
+</div>

@@ -1,0 +1,206 @@
+@model Product
+@using AgriCompany.Web.Services
+@inject ICompanyInfoService CompanyInfoService
+@inject IWebsiteSettingService WebsiteSettingService
+@{
+    ViewData["Title"] = Model.NameAr;
+    var company = await CompanyInfoService.GetAsync();
+    var settings = await WebsiteSettingService.GetAsync();
+    var relatedProducts = ViewBag.RelatedProducts as List<Product> ?? new List<Product>();
+    var images = Model.Images.OrderByDescending(i => i.IsMain).ThenBy(i => i.DisplayOrder).ToList();
+    var mainImage = images.FirstOrDefault()?.ImagePath ?? "/images/placeholders/product-wide.jpg";
+
+    ViewData["MetaDescription"] = Model.Description?.Length > 160 ? Model.Description.Substring(0, 157) + "..." : Model.Description;
+    ViewData["MetaKeywords"] = $"{Model.NameAr}, {Model.NameEn}, {Model.Category?.NameAr}, كود {Model.Code}";
+    ViewData["OgImage"] = mainImage;
+
+    var baseUrl = $"{Context.Request.Scheme}://{Context.Request.Host}";
+    var productImageUrl = mainImage.StartsWith("http") ? mainImage : $"{baseUrl}{mainImage}";
+    var minPrice = Model.Sizes.Any() ? Model.Sizes.Min(s => s.Price) : (decimal?)null;
+}
+
+<div class="page-header text-center">
+    <div class="container">
+        <h1>@Model.NameAr</h1>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb justify-content-center mb-0">
+                <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">الرئيسية</a></li>
+                <li class="breadcrumb-item"><a asp-controller="Products" asp-action="Index">المنتجات</a></li>
+                <li class="breadcrumb-item active">@Model.NameAr</li>
+            </ol>
+        </nav>
+    </div>
+</div>
+
+<section class="py-5">
+    <div class="container">
+        <div class="row g-5">
+            <!-- Gallery -->
+            <div class="col-lg-6" data-aos="fade-left">
+                <a href="@mainImage" data-lightbox="product-gallery" data-title="@Model.NameAr">
+                    <img src="@mainImage" id="mainProductImage" class="product-main-image mb-3" alt="@Model.NameAr" />
+                </a>
+                @if (images.Count > 1)
+                {
+                    <div class="d-flex gap-2 flex-wrap">
+                        @foreach (var img in images)
+                        {
+                            <a href="@img.ImagePath" data-lightbox="product-gallery" data-title="@Model.NameAr">
+                                <img src="@img.ImagePath" class="product-gallery-thumb @(img.IsMain ? "active" : "")"
+                                     onclick="document.getElementById('mainProductImage').src=this.src; return false;" alt="@Model.NameAr" />
+                            </a>
+                        }
+                    </div>
+                }
+            </div>
+
+            <!-- Info -->
+            <div class="col-lg-6" data-aos="fade-right">
+                @if (!Model.IsAvailable)
+                {
+                    <span class="badge bg-secondary mb-2">غير متوفر حاليًا</span>
+                }
+               
+                <h2 class="fw-bold mb-2">@Model.NameAr</h2>
+                @if (!string.IsNullOrWhiteSpace(Model.NameEn))
+                {
+                    <div class="text-muted mb-3">@Model.NameEn</div>
+                }
+                <div class="mb-3">
+                    <a asp-controller="Products" asp-action="ByCategory" asp-route-slug="@Model.Category?.Slug" class="badge bg-success-subtle text-success text-decoration-none px-3 py-2">
+                        <i class="fa-solid fa-tag"></i> @Model.Category?.NameAr
+                    </a>
+                </div>
+
+                <!-- السعر -->
+                <div class="price mb-4" style="font-size:2rem;" id="mainPrice">
+                    @if (Model.Sizes.Any())
+                    {
+                        @Model.Sizes.Min(s => s.Price).ToString("N0")
+                        <span class="fs-6 text-muted">@settings.CurrencySymbol</span>
+                    }
+                    else
+                    {
+                        <span class="text-muted">غير محدد</span>
+                    }
+                </div>
+
+                <p class="text-muted">@Model.Description</p>
+
+                <!-- الأحجام والسعر -->
+                <!-- الأحجام والسعر -->
+                @if (Model.Sizes.Any())
+                {
+                    <div class="mb-4">
+                        <h6 class="fw-bold mb-2">اختر الحجم:</h6>
+                        <div class="d-flex flex-wrap gap-2" id="size-options">
+                            @foreach (var size in Model.Sizes.Where(s => s.IsAvailable).OrderBy(s => s.DisplayOrder))
+                            {
+                                <button type="button"
+                                        class="size-btn btn btn-outline-success rounded-pill px-4 py-2"
+                                        data-size="@size.SizeName"
+                                        data-price="@size.Price"
+                                        onclick="selectSize(this)">
+                                    @size.SizeName - @size.Price.ToString("N0") ج.م
+                                </button>
+                            }
+                        </div>
+                    </div>
+                }
+
+                <input type="hidden" id="selectedSize" value="" />
+                <input type="hidden" id="selectedPrice" value="" />
+                @if (Model.IsAvailable)
+                {
+                    <div class="d-flex align-items-center gap-3 mb-4">
+                        <label class="fw-bold mb-0">الكمية:</label>
+                        <input type="number" id="qty-@Model.Code" value="1" min="1" class="form-control" style="width:100px;" />
+                    </div>
+                    <button type="button" class="btn btn-whatsapp btn-lg rounded-pill px-5"
+                            onclick="orderViaWhatsApp(this)"
+                            data-whatsapp="@company.WhatsAppNumber"
+                            data-name="@Model.NameAr"
+                            data-code="@Model.Code"
+                            data-price="@(Model.Sizes.Any() ? Model.Sizes.Min(s => s.Price) : 0)"
+                            data-currency="@settings.CurrencySymbol">
+                        <i class="fa-brands fa-whatsapp"></i> اطلب الآن عبر واتساب
+                    </button>
+                }
+            </div>
+        </div>
+
+        <!-- Details tabs -->
+        <div class="row mt-5">
+            <div class="col-12" data-aos="fade-up">
+                <ul class="nav nav-tabs" id="productTabs" role="tablist">
+                    <li class="nav-item"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#desc-tab">الوصف</button></li>
+                    @if (!string.IsNullOrWhiteSpace(Model.Benefits))
+                    {
+                        <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#benefits-tab">الفوائد</button></li>
+                    }
+                    @if (!string.IsNullOrWhiteSpace(Model.UsageInstructions))
+                    {
+                        <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#usage-tab">طريقة الاستخدام</button></li>
+                    }
+                </ul>
+                <div class="tab-content border border-top-0 p-4 rounded-bottom">
+                    <div class="tab-pane fade show active" id="desc-tab">
+                        <p class="mb-0" style="white-space:pre-line;">@Model.Description</p>
+                    </div>
+                    @if (!string.IsNullOrWhiteSpace(Model.Benefits))
+                    {
+                        <div class="tab-pane fade" id="benefits-tab">
+                            <p class="mb-0" style="white-space:pre-line;">@Model.Benefits</p>
+                        </div>
+                    }
+                    @if (!string.IsNullOrWhiteSpace(Model.UsageInstructions))
+                    {
+                        <div class="tab-pane fade" id="usage-tab">
+                            <p class="mb-0" style="white-space:pre-line;">@Model.UsageInstructions</p>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <!-- Related products -->
+        @if (relatedProducts.Any())
+        {
+            <div class="mt-5">
+                <h4 class="fw-bold mb-4">منتجات ذات صلة</h4>
+                <div class="row g-4">
+                    @foreach (var rp in relatedProducts)
+                    {
+                        <div class="col-lg-3 col-md-6" data-aos="fade-up">
+                            @await Html.PartialAsync("_ProductCard", rp)
+                        </div>
+                    }
+                </div>
+            </div>
+        }
+    </div>
+</section>
+
+
+@section Scripts {
+    <script>
+        function selectSize(btn) {
+            document.querySelectorAll('.size-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+
+            document.getElementById('selectedSize').value = btn.dataset.size;
+            document.getElementById('selectedPrice').value = btn.dataset.price;
+
+            // تحديث السعر
+            const priceElement = document.getElementById('mainPrice');
+            if (priceElement) {
+                priceElement.innerHTML = Number(btn.dataset.price).toLocaleString('ar-EG') + ' ج.م';
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', function () {
+            const firstBtn = document.querySelector('.size-btn');
+            if (firstBtn) firstBtn.click();
+        });
+    </script>
+}

@@ -1,0 +1,91 @@
+@using Microsoft.AspNetCore.Identity
+@using AgriCompany.Web.Models
+@inject SignInManager<ApplicationUser> SignInManager
+@inject UserManager<ApplicationUser> UserManager
+@{
+    var currentUser = SignInManager.IsSignedIn(User) ? await UserManager.GetUserAsync(User) : null;
+}
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@(ViewData["Title"] != null ? ViewData["Title"] + " | " : "")لوحة التحكم</title>
+
+    <link rel="stylesheet" href="~/lib/cairo-font/arabic.css" asp-append-version="true">
+    <link rel="stylesheet" href="~/lib/bootstrap/css/bootstrap.rtl.min.css" asp-append-version="true">
+    <link rel="stylesheet" href="~/lib/fontawesome/css/all.min.css" asp-append-version="true">
+    <link rel="stylesheet" href="~/lib/toastr/toastr.min.css" asp-append-version="true">
+    <link rel="stylesheet" href="~/css/admin.css" asp-append-version="true" />
+    @await RenderSectionAsync("Styles", required: false)
+</head>
+<body>
+    <div class="admin-wrapper">
+        <!-- Sidebar -->
+        <aside class="admin-sidebar">
+            <div class="sidebar-brand">
+                <i class="fa-solid fa-leaf"></i> <span>لوحة التحكم</span>
+            </div>
+            <ul class="sidebar-menu">
+                <li><a asp-area="Admin" asp-controller="Dashboard" asp-action="Index"><i class="fa-solid fa-gauge"></i> الرئيسية</a></li>
+                <li><a asp-area="Admin" asp-controller="Products" asp-action="Index"><i class="fa-solid fa-box"></i> المنتجات</a></li>
+                <li><a asp-area="Admin" asp-controller="Categories" asp-action="Index"><i class="fa-solid fa-layer-group"></i> الأقسام</a></li>
+                <li><a asp-area="Admin" asp-controller="Homepage" asp-action="Index"><i class="fa-solid fa-images"></i> سلايدر الرئيسية</a></li>
+                <li><a asp-area="Admin" asp-controller="About" asp-action="Index"><i class="fa-solid fa-circle-info"></i> بيانات الشركة</a></li>
+                @* <li><a asp-area="Admin" asp-controller="Testimonials" asp-action="Index"><i class="fa-solid fa-star"></i> آراء العملاء</a></li> *@
+                <li><a asp-area="Admin" asp-controller="Faq" asp-action="Index"><i class="fa-solid fa-circle-question"></i> الأسئلة الشائعة</a></li>
+                <li><a asp-area="Admin" asp-controller="ContactMessages" asp-action="Index"><i class="fa-solid fa-envelope"></i> رسائل التواصل</a></li>
+                <li><a asp-area="Admin" asp-controller="Settings" asp-action="Index"><i class="fa-solid fa-gear"></i> إعدادات الموقع</a></li>
+                <li><a asp-controller="Home" asp-action="Index" asp-area="" target="_blank"><i class="fa-solid fa-globe"></i> عرض الموقع</a></li>
+            </ul>
+        </aside>
+
+        <!-- Main content -->
+        <div class="admin-main">
+            <nav class="admin-topbar">
+                <button class="btn btn-sm btn-light d-lg-none" id="sidebarToggle"><i class="fa-solid fa-bars"></i></button>
+                <div class="ms-auto d-flex align-items-center gap-3">
+                    <span class="text-muted"><i class="fa-solid fa-user-circle"></i> @(currentUser?.FullName ?? "المدير")</span>
+                    <form asp-area="Admin" asp-controller="Account" asp-action="Logout" method="post" class="d-inline">
+                        @Html.AntiForgeryToken()
+                        <button type="submit" class="btn btn-sm btn-outline-danger">
+                            <i class="fa-solid fa-right-from-bracket"></i> تسجيل الخروج
+                        </button>
+                    </form>
+                </div>
+            </nav>
+
+            <main class="admin-content">
+                @if (TempData["Success"] != null)
+                {
+                    <div class="alert alert-success alert-dismissible fade show">
+                        <i class="fa-solid fa-circle-check"></i> @TempData["Success"]
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                }
+                @if (TempData["Error"] != null)
+                {
+                    <div class="alert alert-danger alert-dismissible fade show">
+                        <i class="fa-solid fa-circle-exclamation"></i> @TempData["Error"]
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                }
+
+                @RenderBody()
+            </main>
+        </div>
+    </div>
+
+    <script src="~/lib/bootstrap/js/bootstrap.bundle.min.js" asp-append-version="true"></script>
+    <script src="~/lib/jquery/jquery.min.js" asp-append-version="true"></script>
+    <script src="~/lib/toastr/toastr.min.js" asp-append-version="true"></script>
+    <script src="~/lib/sweetalert2/sweetalert2.all.min.js" asp-append-version="true"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    <script>
+        document.getElementById('sidebarToggle')?.addEventListener('click', function () {
+            document.querySelector('.admin-wrapper').classList.toggle('sidebar-open');
+        });
+    </script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

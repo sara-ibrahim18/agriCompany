@@ -1,0 +1,193 @@
+@model DashboardViewModel
+@{
+    ViewData["Title"] = "لوحة التحكم";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h3 class="fw-bold mb-0">مرحبًا بك في لوحة التحكم</h3>
+</div>
+
+<div class="row g-4 mb-4">
+    <div class="col-lg-3 col-md-6">
+        <div class="stat-card">
+            <div class="icon-box" style="background:#2e7d32;"><i class="fa-solid fa-box"></i></div>
+            <div>
+                <h3>@Model.ProductsCount</h3>
+                <small>إجمالي المنتجات</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-3 col-md-6">
+        <div class="stat-card">
+            <div class="icon-box" style="background:#1976d2;"><i class="fa-solid fa-layer-group"></i></div>
+            <div>
+                <h3>@Model.CategoriesCount</h3>
+                <small>الأقسام</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-3 col-md-6">
+        <div class="stat-card">
+            <div class="icon-box" style="background:#f57c00;"><i class="fa-solid fa-envelope"></i></div>
+            <div>
+                <h3>@Model.NewMessagesCount</h3>
+                <small>رسائل جديدة (من @Model.TotalMessagesCount)</small>
+            </div>
+        </div>
+    </div>
+    @* <div class="col-lg-3 col-md-6"> *@
+    @*     <div class="stat-card"> *@
+    @*         <div class="icon-box" style="background:#8e24aa;"><i class="fa-solid fa-star"></i></div> *@
+    @*         <div> *@
+    @*             <h3>@Model.TestimonialsCount</h3> *@
+    @*             <small>آراء العملاء</small> *@
+    @*         </div> *@
+    @*     </div> *@
+    @* </div> *@
+    <div class="col-lg-3 col-md-6">
+        <div class="stat-card">
+            <div class="icon-box" style="background:#43a047;"><i class="fa-solid fa-check"></i></div>
+            <div>
+                <h3>@Model.AvailableProductsCount</h3>
+                <small>منتجات متاحة</small>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4 mb-4">
+    @* <div class="col-lg-3 col-md-6"> *@
+    @*     <div class="stat-card"> *@
+    @*         <div class="icon-box" style="background:#43a047;"><i class="fa-solid fa-check"></i></div> *@
+    @*         <div> *@
+    @*             <h3>@Model.AvailableProductsCount</h3> *@
+    @*             <small>منتجات متاحة</small> *@
+    @*         </div> *@
+    @*     </div> *@
+    @* </div> *@
+    <div class="col-lg-3 col-md-6">
+        <div class="stat-card">
+            <div class="icon-box" style="background:#e53935;"><i class="fa-solid fa-xmark"></i></div>
+            <div>
+                <h3>@Model.UnavailableProductsCount</h3>
+                <small>منتجات غير متاحة</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-3 col-md-6">
+        <div class="stat-card">
+            <div class="icon-box" style="background:#00897b;"><i class="fa-solid fa-circle-question"></i></div>
+            <div>
+                <h3>@Model.FaqCount</h3>
+                <small>الأسئلة الشائعة</small>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4">
+    <!-- Latest products -->
+    <div class="col-lg-7">
+        <div class="admin-card">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h6 class="fw-bold mb-0">أحدث المنتجات</h6>
+                <a asp-area="Admin" asp-controller="Products" asp-action="Index" class="small">عرض الكل</a>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                    <thead>
+                        <tr>
+                            <th>الصورة</th>
+                            <th>الاسم</th>
+                            <th>الكود</th>
+                            <th>السعر</th>
+                            <th>الحالة</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var p in Model.LatestProducts)
+                        {
+                            <tr>
+                                <td><img src="@(p.MainImagePath ?? "/images/placeholders/thumb.jpg")" class="thumb" /></td>
+                                <td>@p.NameAr</td>
+                                <td>@p.Code</td>
+                                
+                                <td>
+                                        @if (p.Sizes.Any())
+                                        {
+                                        <small>@p.Sizes.Min(s => s.Price).ToString("N0") ج.م</small>
+                                        }
+                                        else
+                                        {
+                                        <small>غير محدد</small>
+                                        }
+                                </td>
+                                
+                                <td>
+                                    @if (p.IsAvailable)
+                                    {
+                                        <span class="badge bg-success">متاح</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-secondary">غير متاح</span>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                        @if (!Model.LatestProducts.Any())
+                        {
+                            <tr><td colspan="5" class="text-center text-muted py-3">لا توجد منتجات بعد</td></tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Latest messages -->
+    <div class="col-lg-5">
+        <div class="admin-card">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h6 class="fw-bold mb-0">أحدث الرسائل</h6>
+                <a asp-area="Admin" asp-controller="ContactMessages" asp-action="Index" class="small">عرض الكل</a>
+            </div>
+            @foreach (var m in Model.LatestMessages)
+            {
+                <a asp-area="Admin" asp-controller="ContactMessages" asp-action="Details" asp-route-id="@m.Id"
+                   class="d-flex justify-content-between align-items-center py-2 border-bottom text-decoration-none text-dark">
+                    <div>
+                        <div class="fw-bold">
+                            @m.FullName
+                            @if (!m.IsRead)
+                            {
+                                <span class="badge bg-danger ms-1">جديد</span>
+                            }
+                        </div>
+                        <small class="text-muted">@m.Subject</small>
+                    </div>
+                    <small class="text-muted">@m.CreatedAt.ToString("dd/MM")</small>
+                </a>
+            }
+            @if (!Model.LatestMessages.Any())
+            {
+                <div class="text-center text-muted py-3">لا توجد رسائل بعد</div>
+            }
+        </div>
+
+        <div class="admin-card mt-4">
+            <h6 class="fw-bold mb-3">المنتجات لكل قسم</h6>
+            @foreach (var cat in Model.ProductsPerCategory)
+            {
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <span>@cat.CategoryName</span>
+                    <span class="badge bg-light text-dark">@cat.Count</span>
+                </div>
+            }
+            @if (!Model.ProductsPerCategory.Any())
+            {
+                <div class="text-center text-muted py-3">لا توجد بيانات</div>
+            }
+        </div>
+    </div>
+</div>

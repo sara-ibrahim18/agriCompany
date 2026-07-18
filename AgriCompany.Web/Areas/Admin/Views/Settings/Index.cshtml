@@ -1,0 +1,61 @@
+@model WebsiteSetting
+@{
+    ViewData["Title"] = "إعدادات الموقع";
+}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h3 class="fw-bold mb-0">إعدادات الموقع</h3>
+</div>
+
+<div class="admin-card">
+    <form asp-area="Admin" asp-controller="Settings" asp-action="Index" method="post">
+        @Html.AntiForgeryToken()
+        <input type="hidden" asp-for="Id" />
+        <div asp-validation-summary="All" class="text-danger mb-3"></div>
+
+        <div class="mb-3">
+            <label asp-for="SiteTitle" class="form-label"></label>
+            <input asp-for="SiteTitle" class="form-control" />
+            <span asp-validation-for="SiteTitle" class="text-danger small"></span>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="MetaDescription" class="form-label"></label>
+            <textarea asp-for="MetaDescription" class="form-control" rows="2"></textarea>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="MetaKeywords" class="form-label"></label>
+            <input asp-for="MetaKeywords" class="form-control" placeholder="كلمة1, كلمة2, كلمة3" />
+        </div>
+
+        <div class="row">
+            <div class="col-md-4 mb-3">
+                <label asp-for="PrimaryColor" class="form-label"></label>
+                <input asp-for="PrimaryColor" class="form-control" type="color" style="height:45px;" />
+            </div>
+            <div class="col-md-4 mb-3">
+                <label asp-for="CurrencySymbol" class="form-label"></label>
+                <input asp-for="CurrencySymbol" class="form-control" />
+            </div>
+            <div class="col-md-4 mb-3 d-flex align-items-end">
+                <div class="form-check">
+                    <input asp-for="IsMaintenanceMode" class="form-check-input" />
+                    <label asp-for="IsMaintenanceMode" class="form-check-label"></label>
+                </div>
+            </div>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="FooterText" class="form-label"></label>
+            <input asp-for="FooterText" class="form-control" />
+        </div>
+
+        <button type="submit" class="btn btn-admin-primary rounded-pill px-4">
+            <i class="fa-solid fa-save"></i> حفظ الإعدادات
+        </button>
+    </form>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

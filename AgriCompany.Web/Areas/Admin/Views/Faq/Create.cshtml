@@ -1,0 +1,50 @@
+@model FAQ
+@{
+    ViewData["Title"] = "إضافة سؤال";
+}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h3 class="fw-bold mb-0">إضافة سؤال جديد</h3>
+    <a asp-area="Admin" asp-controller="Faq" asp-action="Index" class="btn btn-outline-secondary rounded-pill px-4">
+        <i class="fa-solid fa-arrow-right"></i> رجوع
+    </a>
+</div>
+
+<div class="admin-card">
+    <form asp-area="Admin" asp-controller="Faq" asp-action="Create" method="post">
+        @Html.AntiForgeryToken()
+        <div asp-validation-summary="All" class="text-danger mb-3"></div>
+
+        <div class="mb-3">
+            <label asp-for="QuestionAr" class="form-label"></label>
+            <input asp-for="QuestionAr" class="form-control" />
+            <span asp-validation-for="QuestionAr" class="text-danger small"></span>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="AnswerAr" class="form-label"></label>
+            <textarea asp-for="AnswerAr" class="form-control" rows="4"></textarea>
+            <span asp-validation-for="AnswerAr" class="text-danger small"></span>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                <label asp-for="DisplayOrder" class="form-label"></label>
+                <input asp-for="DisplayOrder" class="form-control" type="number" />
+            </div>
+            <div class="col-md-6 mb-3 d-flex align-items-end">
+                <div class="form-check">
+                    <input asp-for="IsActive" class="form-check-input" checked />
+                    <label asp-for="IsActive" class="form-check-label"></label>
+                </div>
+            </div>
+        </div>
+
+        <button type="submit" class="btn btn-admin-primary rounded-pill px-4">
+            <i class="fa-solid fa-save"></i> حفظ
+        </button>
+    </form>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

@@ -1,0 +1,61 @@
+@model List<FAQ>
+@{
+    ViewData["Title"] = "الأسئلة الشائعة";
+}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h3 class="fw-bold mb-0">إدارة الأسئلة الشائعة</h3>
+    <a asp-area="Admin" asp-controller="Faq" asp-action="Create" class="btn btn-admin-primary rounded-pill px-4">
+        <i class="fa-solid fa-plus"></i> إضافة سؤال جديد
+    </a>
+</div>
+
+<div class="admin-card">
+    <div class="table-responsive">
+        <table class="table table-hover align-middle">
+            <thead>
+                <tr>
+                    <th>السؤال</th>
+                    <th>الحالة</th>
+                    <th>الترتيب</th>
+                    <th>إجراءات</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var faq in Model)
+                {
+                    <tr>
+                        <td>@faq.QuestionAr</td>
+                        <td>
+                            @if (faq.IsActive)
+                            {
+                                <span class="badge bg-success">مفعل</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-secondary">غير مفعل</span>
+                            }
+                        </td>
+                        <td>@faq.DisplayOrder</td>
+                        <td>
+                            <a asp-area="Admin" asp-controller="Faq" asp-action="Edit" asp-route-id="@faq.Id" class="btn btn-sm btn-outline-primary">
+                                <i class="fa-solid fa-pen"></i>
+                            </a>
+                            <button type="button" class="btn btn-sm btn-outline-danger"
+                                    data-item-name="@faq.QuestionAr" data-form-id="delete-form-@faq.Id"
+                                    onclick="confirmDeleteEl(this)">
+                                <i class="fa-solid fa-trash"></i>
+                            </button>
+                            <form id="delete-form-@faq.Id" asp-area="Admin" asp-controller="Faq" asp-action="Delete" asp-route-id="@faq.Id" method="post" class="d-none">
+                                @Html.AntiForgeryToken()
+                            </form>
+                        </td>
+                    </tr>
+                }
+                @if (!Model.Any())
+                {
+                    <tr><td colspan="4" class="text-center text-muted py-4">لا توجد أسئلة بعد</td></tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

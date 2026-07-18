@@ -1,0 +1,70 @@
+@model Category
+@{
+    ViewData["Title"] = "تعديل قسم";
+}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h3 class="fw-bold mb-0">تعديل قسم: @Model.NameAr</h3>
+    <a asp-area="Admin" asp-controller="Categories" asp-action="Index" class="btn btn-outline-secondary rounded-pill px-4">
+        <i class="fa-solid fa-arrow-right"></i> رجوع
+    </a>
+</div>
+
+<div class="admin-card">
+    <form asp-area="Admin" asp-controller="Categories" asp-action="Edit" asp-route-id="@Model.Id" method="post" enctype="multipart/form-data">
+        @Html.AntiForgeryToken()
+        <input type="hidden" asp-for="Id" />
+        <input type="hidden" asp-for="Slug" />
+        <div asp-validation-summary="All" class="text-danger mb-3"></div>
+
+        @if (!string.IsNullOrWhiteSpace(Model.ImagePath))
+        {
+            <div class="mb-3">
+                <img src="@Model.ImagePath" class="image-preview-box" />
+            </div>
+        }
+
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                <label asp-for="NameAr" class="form-label"></label>
+                <input asp-for="NameAr" class="form-control" />
+                <span asp-validation-for="NameAr" class="text-danger small"></span>
+            </div>
+            <div class="col-md-6 mb-3">
+                <label asp-for="NameEn" class="form-label"></label>
+                <input asp-for="NameEn" class="form-control" />
+                <span asp-validation-for="NameEn" class="text-danger small"></span>
+            </div>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="Description" class="form-label"></label>
+            <textarea asp-for="Description" class="form-control" rows="3"></textarea>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">تغيير صورة القسم (اختياري)</label>
+            <input type="file" name="image" class="form-control" accept="image/*" />
+        </div>
+
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                <label asp-for="DisplayOrder" class="form-label"></label>
+                <input asp-for="DisplayOrder" class="form-control" type="number" />
+            </div>
+            <div class="col-md-6 mb-3 d-flex align-items-end">
+                <div class="form-check">
+                    <input asp-for="IsActive" class="form-check-input" />
+                    <label asp-for="IsActive" class="form-check-label"></label>
+                </div>
+            </div>
+        </div>
+
+        <button type="submit" class="btn btn-admin-primary rounded-pill px-4">
+            <i class="fa-solid fa-save"></i> حفظ التعديلات
+        </button>
+    </form>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

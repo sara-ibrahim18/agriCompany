@@ -1,0 +1,80 @@
+@model PagedResult<Category>
+@{
+    ViewData["Title"] = "الأقسام";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h3 class="fw-bold mb-0">إدارة الأقسام</h3>
+    <a asp-area="Admin" asp-controller="Categories" asp-action="Create" class="btn btn-admin-primary rounded-pill px-4">
+        <i class="fa-solid fa-plus"></i> إضافة قسم جديد
+    </a>
+</div>
+
+<div class="admin-card">
+    <div class="table-responsive">
+        <table class="table table-hover align-middle">
+            <thead>
+                <tr>
+                    <th>الصورة</th>
+                    <th>الاسم بالعربية</th>
+                    <th>الاسم بالإنجليزية</th>
+                    <th>الحالة</th>
+                    <th>الترتيب</th>
+                    <th>إجراءات</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var cat in Model.Items)
+                {
+                    <tr>
+                        <td><img src="@(cat.ImagePath ?? "/images/placeholders/thumb.jpg")" class="thumb" /></td>
+                        <td>@cat.NameAr</td>
+                        <td>@cat.NameEn</td>
+                        <td>
+                            @if (cat.IsActive)
+                            {
+                                <span class="badge bg-success">مفعل</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-secondary">غير مفعل</span>
+                            }
+                        </td>
+                        <td>@cat.DisplayOrder</td>
+                        <td>
+                            <a asp-area="Admin" asp-controller="Categories" asp-action="Edit" asp-route-id="@cat.Id" class="btn btn-sm btn-outline-primary">
+                                <i class="fa-solid fa-pen"></i>
+                            </a>
+                            <button type="button" class="btn btn-sm btn-outline-danger"
+                                    data-item-name="@cat.NameAr" data-form-id="delete-form-@cat.Id"
+                                    onclick="confirmDeleteEl(this)">
+                                <i class="fa-solid fa-trash"></i>
+                            </button>
+                            <form id="delete-form-@cat.Id" asp-area="Admin" asp-controller="Categories" asp-action="Delete" asp-route-id="@cat.Id" method="post" class="d-none">
+                                @Html.AntiForgeryToken()
+                            </form>
+                        </td>
+                    </tr>
+                }
+                @if (!Model.Items.Any())
+                {
+                    <tr><td colspan="6" class="text-center text-muted py-4">لا توجد أقسام بعد</td></tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    @if (Model.TotalPages > 1)
+    {
+        <nav>
+            <ul class="pagination justify-content-center mt-3">
+                @for (int i = 1; i <= Model.TotalPages; i++)
+                {
+                    <li class="page-item @(i == Model.PageNumber ? "active" : "")">
+                        <a class="page-link" asp-area="Admin" asp-controller="Categories" asp-action="Index" asp-route-page="@i">@i</a>
+                    </li>
+                }
+            </ul>
+        </nav>
+    }
+</div>

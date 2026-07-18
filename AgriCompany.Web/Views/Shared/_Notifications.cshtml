@@ -1,0 +1,16 @@
+@if (TempData["ContactSuccess"] != null)
+{
+    <script>document.addEventListener('DOMContentLoaded', function(){ showToast('success', @Html.Raw(Json.Serialize(TempData["ContactSuccess"]))); });</script>
+}
+@if (TempData["ContactError"] != null)
+{
+    <script>document.addEventListener('DOMContentLoaded', function(){ showToast('error', @Html.Raw(Json.Serialize(TempData["ContactError"]))); });</script>
+}
+@if (TempData["Success"] != null)
+{
+    <script>document.addEventListener('DOMContentLoaded', function(){ showToast('success', @Html.Raw(Json.Serialize(TempData["Success"]))); });</script>
+}
+@if (TempData["Error"] != null)
+{
+    <script>document.addEventListener('DOMContentLoaded', function(){ showToast('error', @Html.Raw(Json.Serialize(TempData["Error"]))); });</script>
+}

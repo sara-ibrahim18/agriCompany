@@ -1,0 +1,71 @@
+@model List<FAQ>
+@{
+    ViewData["Title"] = "الأسئلة الشائعة";
+    ViewData["MetaDescription"] = "إجابات على أكثر الأسئلة شيوعًا حول منتجاتنا الزراعية، الطلب، التوصيل، وطرق الاستخدام.";
+    ViewData["MetaKeywords"] = "الأسئلة الشائعة, استفسارات, منتجات زراعية";
+}
+@if (Model.Any())
+{
+    var faqItems = string.Join(",", Model.Select(f =>
+        "{\"@type\":\"Question\",\"name\":" + System.Text.Json.JsonSerializer.Serialize(f.QuestionAr) +
+        ",\"acceptedAnswer\":{\"@type\":\"Answer\",\"text\":" + System.Text.Json.JsonSerializer.Serialize(f.AnswerAr) + "}}"));
+    <script type="application/ld+json">
+        {
+            "@@context": "https://schema.org",
+            "@@type": "FAQPage",
+            "mainEntity": [@Html.Raw(faqItems)]
+        }
+    </script>
+}
+<div class="page-header text-center">
+    <div class="container">
+        <h1>الأسئلة الشائعة</h1>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb justify-content-center mb-0">
+                <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">الرئيسية</a></li>
+                <li class="breadcrumb-item active">الأسئلة الشائعة</li>
+            </ol>
+        </nav>
+    </div>
+</div>
+
+<section class="py-5">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                @if (Model.Any())
+                {
+                    <div class="accordion" id="faqAccordion">
+                        @for (int i = 0; i < Model.Count; i++)
+                        {
+                            var faq = Model[i];
+                            <div class="accordion-item mb-3 border-0 shadow-sm" data-aos="fade-up">
+                                <h2 class="accordion-header">
+                                    <button class="accordion-button @(i == 0 ? "" : "collapsed")" type="button"
+                                            data-bs-toggle="collapse" data-bs-target="#faq-@faq.Id">
+                                        @faq.QuestionAr
+                                    </button>
+                                </h2>
+                                <div id="faq-@faq.Id" class="accordion-collapse collapse @(i == 0 ? "show" : "")"
+                                     data-bs-parent="#faqAccordion">
+                                    <div class="accordion-body text-muted" style="white-space:pre-line;">
+                                        @faq.AnswerAr
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                }
+                else
+                {
+                    <div class="text-center text-muted py-5">لا توجد أسئلة شائعة حاليًا</div>
+                }
+
+                <div class="text-center mt-5">
+                    <p class="text-muted">لم تجد إجابة لسؤالك؟</p>
+                    <a asp-controller="Contact" asp-action="Index" class="btn btn-success rounded-pill px-4">تواصل معنا</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>

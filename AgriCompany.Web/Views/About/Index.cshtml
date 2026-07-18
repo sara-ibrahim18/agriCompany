@@ -1,0 +1,55 @@
+@model CompanyInformation
+
+@{
+    ViewData["Title"] = "من نحن";
+    ViewData["MetaDescription"] = Model.AboutText?.Length > 160 ? Model.AboutText.Substring(0, 157) + "..." : Model.AboutText;
+    ViewData["MetaKeywords"] = $"{Model.CompanyNameAr}, من نحن, شركة زراعية, رؤيتنا, رسالتنا";
+}
+<div class="page-header text-center">
+    <div class="container">
+        <h1>من نحن</h1>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb justify-content-center mb-0">
+                <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">الرئيسية</a></li>
+                <li class="breadcrumb-item active">من نحن</li>
+            </ol>
+        </nav>
+    </div>
+</div>
+
+<section class="py-5">
+    <div class="container">
+        <div class="row align-items-center g-5">
+            <div class="col-lg-6" data-aos="fade-left">
+                <img src="@(string.IsNullOrWhiteSpace(Model.LogoPath) ? "/images/placeholders/logo.jpg" : Model.LogoPath)" class="img-fluid rounded-4 shadow" alt="@Model.CompanyNameAr" />
+            </div>
+            <div class="col-lg-6" data-aos="fade-right">
+                <h2 class="section-title">@Model.CompanyNameAr</h2>
+                <p class="text-muted">@Model.AboutText</p>
+            </div>
+        </div>
+
+        <div class="row g-4 mt-4">
+            @if (!string.IsNullOrWhiteSpace(Model.Vision))
+            {
+                <div class="col-md-6" data-aos="fade-up">
+                    <div class="p-4 bg-light rounded-4 h-100">
+                        <i class="fa-solid fa-eye text-success fs-2 mb-3"></i>
+                        <h4 class="fw-bold">رؤيتنا</h4>
+                        <p class="text-muted mb-0">@Model.Vision</p>
+                    </div>
+                </div>
+            }
+            @if (!string.IsNullOrWhiteSpace(Model.Mission))
+            {
+                <div class="col-md-6" data-aos="fade-up" data-aos-delay="100">
+                    <div class="p-4 bg-light rounded-4 h-100">
+                        <i class="fa-solid fa-bullseye text-success fs-2 mb-3"></i>
+                        <h4 class="fw-bold">رسالتنا</h4>
+                        <p class="text-muted mb-0">@Model.Mission</p>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</section>

@@ -1,0 +1,74 @@
+@model HomepageSlide
+@{
+    ViewData["Title"] = "إضافة سلايد";
+}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h3 class="fw-bold mb-0">إضافة سلايد جديد</h3>
+    <a asp-area="Admin" asp-controller="Homepage" asp-action="Index" class="btn btn-outline-secondary rounded-pill px-4">
+        <i class="fa-solid fa-arrow-right"></i> رجوع
+    </a>
+</div>
+
+<div class="admin-card">
+    <form asp-area="Admin" asp-controller="Homepage" asp-action="Create" method="post" enctype="multipart/form-data">
+        @Html.AntiForgeryToken()
+        <div asp-validation-summary="All" class="text-danger mb-3"></div>
+
+        <div class="mb-3">
+            <label asp-for="TitleAr" class="form-label"></label>
+            <input asp-for="TitleAr" class="form-control" />
+            <span asp-validation-for="TitleAr" class="text-danger small"></span>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="SubtitleAr" class="form-label"></label>
+            <input asp-for="SubtitleAr" class="form-control" />
+        </div>
+
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                <label asp-for="ButtonText" class="form-label"></label>
+                <input asp-for="ButtonText" class="form-control" placeholder="مثال: تصفح المنتجات" />
+            </div>
+            <div class="col-md-6 mb-3">
+                <label asp-for="ButtonUrl" class="form-label"></label>
+                <input asp-for="ButtonUrl" class="form-control" placeholder="/Products" />
+            </div>
+        </div>
+
+        @* <div class="mb-3"> *@
+        @*     <label class="form-label">صورة السلايد <span class="text-danger">*</span></label> *@
+        @*     <input type="file" name="image" class="form-control" accept="image/*" /> *@
+        @*     <div asp-validation-summary="All" class="text-danger mt-2"></div> *@
+        @* </div> *@
+        @* <div class="mb-3"> *@
+        @*     <label class="form-label">صورة السلايد <span class="text-danger">*</span></label> *@
+        @*     <input type="file" name="image" class="form-control" accept="image/*" /> *@
+        @*     <div asp-validation-summary="All" class="text-danger mt-2"></div> *@
+        @* </div> *@
+        <div class="mb-3">
+            <label class="form-label">صورة السلايد <span class="text-danger">*</span></label>
+            <input type="file" name="image" class="form-control" accept="image/*" />
+        </div>
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                <label asp-for="DisplayOrder" class="form-label"></label>
+                <input asp-for="DisplayOrder" class="form-control" type="number" />
+            </div>
+            <div class="col-md-6 mb-3 d-flex align-items-end">
+                <div class="form-check">
+                    <input asp-for="IsActive" class="form-check-input" checked />
+                    <label asp-for="IsActive" class="form-check-label"></label>
+                </div>
+            </div>
+        </div>
+
+        <button type="submit" class="btn btn-admin-primary rounded-pill px-4">
+            <i class="fa-solid fa-save"></i> حفظ
+        </button>
+    </form>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
