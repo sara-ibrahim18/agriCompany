@@ -1,1 +1,14 @@
-﻿ViewData["Robots"] = "noindex, follow"
+﻿@{
+    ViewData["Title"] = "الصفحة غير موجودة";
+    ViewData["Robots"] = "noindex, follow";
+}
+
+<section class="py-5 text-center">
+    <div class="container">
+        <h1 class="display-1 fw-bold text-success">404</h1>
+        <h2 class="mb-3">الصفحة غير موجودة</h2>
+        <p class="text-muted mb-4">الصفحة اللي بتدور عليها مش موجودة أو اتنقلت.</p>
+        <a asp-controller="Home" asp-action="Index" class="btn btn-success me-2">الرئيسية</a>
+        <a asp-controller="Products" asp-action="Index" class="btn btn-outline-success">تصفح المنتجات</a>
+    </div>
+</section>
