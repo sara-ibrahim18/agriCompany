@@ -35,7 +35,7 @@
 
                         <div class="mb-3">
                             <label class="form-label small">بحث</label>
-                            <input type="text" name="search" value="@Model.SearchTerm" class="form-control" placeholder="اسم المنتج أو الكود..." />
+                            <input type="text" name="search" value="@Model.SearchTerm" class="form-control" placeholder="اسم المنتج أو القسم..." />
                         </div>
 
                         <div class="mb-3">
@@ -56,20 +56,9 @@
                             </select>
                         </div>
 
-                        <div class="mb-3">
-                            <label class="form-label small">الترتيب حسب</label>
-                            <select name="sortBy" class="form-select" onchange="this.form.submit()">
-                                <option value="newest" selected="@(Model.SortBy == "newest")">الأحدث</option>
-                                <option value="price_asc" selected="@(Model.SortBy == "price_asc")">السعر: من الأقل للأعلى</option>
-                                <option value="price_desc" selected="@(Model.SortBy == "price_desc")">السعر: من الأعلى للأقل</option>
-                                <option value="name_asc" selected="@(Model.SortBy == "name_asc")">الاسم (أ-ي)</option>
-                            </select>
-                        </div>
-
                         <button type="submit" class="btn btn-success w-100 rounded-pill">
                             <i class="fa-solid fa-search"></i> بحث
                         </button>
-                        <a asp-controller="Products" asp-action="Index" class="btn btn-outline-secondary w-100 rounded-pill mt-2">إعادة تعيين</a>
                     </form>
                 </div>
             </div>

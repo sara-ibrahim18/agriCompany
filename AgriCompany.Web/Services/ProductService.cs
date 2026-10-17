@@ -19,7 +19,7 @@ namespace AgriCompany.Web.Services
             _slugService = slugService;
         }
 
-       
+
         public async Task<PagedResult<Product>> GetPublicProductsAsync(
            string? searchTerm,
            int? categoryId,
@@ -40,12 +40,14 @@ namespace AgriCompany.Web.Services
 
             if (!string.IsNullOrWhiteSpace(searchTerm))
             {
+                // البحث مقصور على اسم المنتج (عربي/إنجليزي) واسم القسم فقط،
+                // عشان نتايج البحث تكون دقيقة وسريعة ومفيهاش ضغطات زيادة على المستخدم.
                 var term = searchTerm.Trim().ToLower();
                 query = query.Where(p =>
     p.NameAr.ToLower().Contains(term) ||
     p.NameEn.ToLower().Contains(term) ||
-    p.Code.ToLower().Contains(term) ||
-    (p.Description != null && p.Description.ToLower().Contains(term)));
+    (p.Category != null && p.Category.NameAr.ToLower().Contains(term)) ||
+    (p.Category != null && p.Category.NameEn.ToLower().Contains(term)));
             }
 
             // Sorting
