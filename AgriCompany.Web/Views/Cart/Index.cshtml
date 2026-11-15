@@ -1,0 +1,125 @@
+@using AgriCompany.Web.Services
+@inject ICompanyInfoService CompanyInfoService
+@inject IWebsiteSettingService WebsiteSettingService
+@{
+    ViewData["Title"] = "سلة المشتريات";
+    ViewData["MetaDescription"] = "سلة المشتريات - راجع طلبك وأكمله عبر واتساب";
+    var company = await CompanyInfoService.GetAsync();
+    var settings = await WebsiteSettingService.GetAsync();
+}
+
+<div class="page-header text-center">
+    <div class="container">
+        <h1>سلة المشتريات</h1>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb justify-content-center mb-0">
+                <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">الرئيسية</a></li>
+                <li class="breadcrumb-item active">السلة</li>
+            </ol>
+        </nav>
+    </div>
+</div>
+
+<section class="py-5">
+    <div class="container" id="cartPage"
+         data-whatsapp="@company.WhatsAppNumber"
+         data-currency="@settings.CurrencySymbol">
+
+        <!-- السلة فاضية -->
+        <div class="text-center py-5 d-none" data-cart-empty>
+            <i class="fa-solid fa-cart-shopping fa-4x text-muted mb-3"></i>
+            <h4 class="fw-bold">السلة فاضية</h4>
+            <p class="text-muted">ضيف المنتجات اللي محتاجها للسلة، وبعدين ارجع هنا لإتمام الطلب.</p>
+            <a asp-controller="Products" asp-action="Index" class="btn btn-success rounded-pill px-4">
+                <i class="fa-solid fa-box"></i> تصفح المنتجات
+            </a>
+        </div>
+
+        <div class="row g-4 d-none" data-cart-content>
+            <!-- المنتجات -->
+            <div class="col-lg-8">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="fw-bold mb-0">المنتجات (<span data-cart-items-count>0</span>)</h5>
+                    <button type="button" class="btn btn-link text-danger text-decoration-none p-0" data-act="clear">
+                        <i class="fa-solid fa-trash"></i> تفريغ السلة
+                    </button>
+                </div>
+                <div class="d-flex flex-column gap-3" data-cart-list></div>
+                <a asp-controller="Products" asp-action="Index" class="btn btn-outline-success rounded-pill mt-4">
+                    <i class="fa-solid fa-arrow-right"></i> متابعة التسوق
+                </a>
+            </div>
+
+            <!-- إتمام الطلب -->
+            <div class="col-lg-4">
+                <div class="cart-summary card border-0 shadow-sm">
+                    <div class="card-body p-4">
+                        <h5 class="fw-bold mb-3">ملخص الطلب</h5>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="text-muted">عدد القطع</span>
+                            <span data-cart-items-count>0</span>
+                        </div>
+                        <div class="d-flex justify-content-between border-top pt-3 mb-4">
+                            <span class="fw-bold">الإجمالي</span>
+                            <span class="price fw-bold" data-cart-total>0</span>
+                        </div>
+
+                        <form id="checkoutForm" novalidate>
+                            <div class="mb-3">
+                                <label for="customerName" class="form-label">الاسم <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="customerName" name="customerName" required maxlength="100" />
+                                <div class="invalid-feedback">من فضلك اكتب اسمك</div>
+                            </div>
+                            <div class="mb-3">
+                                <label for="customerPhone" class="form-label">رقم الموبايل <span class="text-danger">*</span></label>
+                                <input type="tel" class="form-control" id="customerPhone" name="customerPhone" required
+                                       pattern="[0-9٠-٩+\s]{8,20}" maxlength="20" dir="ltr" />
+                                <div class="invalid-feedback">من فضلك اكتب رقم موبايل صحيح</div>
+                            </div>
+                            <div class="mb-3">
+                                <label for="customerAddress" class="form-label">العنوان</label>
+                                <input type="text" class="form-control" id="customerAddress" name="customerAddress" maxlength="250" />
+                            </div>
+                            <div class="mb-4">
+                                <label for="customerNotes" class="form-label">ملاحظات</label>
+                                <textarea class="form-control" id="customerNotes" name="customerNotes" rows="2" maxlength="500"></textarea>
+                            </div>
+                            <div class="d-grid">
+                                <button type="submit" class="btn btn-whatsapp btn-lg rounded-pill">
+                                    <i class="fa-brands fa-whatsapp"></i> إتمام الطلب عبر واتساب
+                                </button>
+                            </div>
+                            <p class="small text-muted mt-3 mb-0 text-center">
+                                هيتم فتح واتساب برسالة فيها كل تفاصيل طلبك، وفريقنا هيأكد معاك الطلب والأسعار.
+                            </p>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <template id="cartItemTemplate">
+            <div class="cart-item card border-0 shadow-sm">
+                <div class="card-body d-flex gap-3 align-items-center flex-wrap flex-sm-nowrap">
+                    <a data-f="link" class="flex-shrink-0">
+                        <img data-f="image" class="cart-item-img" alt="" />
+                    </a>
+                    <div class="flex-grow-1">
+                        <a data-f="link" class="text-dark text-decoration-none"><h6 class="fw-bold mb-1" data-f="name"></h6></a>
+                        <div class="small text-muted" data-f="size"></div>
+                        <div class="small text-muted">سعر الوحدة: <span data-f="price"></span></div>
+                    </div>
+                    <div class="input-group input-group-sm cart-qty">
+                        <button type="button" class="btn btn-outline-secondary" data-act="inc" aria-label="زيادة">+</button>
+                        <input type="number" min="1" class="form-control text-center" data-f="qty" aria-label="الكمية" />
+                        <button type="button" class="btn btn-outline-secondary" data-act="dec" aria-label="تقليل">−</button>
+                    </div>
+                    <div class="price fw-bold text-nowrap cart-subtotal" data-f="subtotal"></div>
+                    <button type="button" class="btn btn-sm btn-outline-danger rounded-circle" data-act="remove" aria-label="حذف">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                </div>
+            </div>
+        </template>
+    </div>
+</section>

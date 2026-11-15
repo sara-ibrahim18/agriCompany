@@ -26,7 +26,7 @@
         </h6>
         <div class="text-muted small mb-2">@Model.Category?.NameAr</div>
         <div class="d-flex justify-content-between align-items-center">
-            <<span class="price">
+            <span class="price">
                 @if (Model.Sizes.Any())
                 {
                     @Model.Sizes.Min(s => s.Price).ToString("N0")
@@ -39,15 +39,29 @@
             </span>
             @if (Model.IsAvailable)
             {
-                <button type="button" class="btn btn-whatsapp btn-sm rounded-pill px-3"
-                        data-whatsapp="@company.WhatsAppNumber"
-                        data-name="@Model.NameAr"
-                        data-code="@Model.Code"
-                        data-price="@(Model.Sizes.Any() ? Model.Sizes.Min(s => s.Price).ToString("N0") : "0")"
-                        data-currency="@settings.CurrencySymbol"
-                        onclick="orderViaWhatsApp(this)">
-                    <i class="fa-brands fa-whatsapp"></i> اطلب
-                </button>
+                var availableSizes = Model.Sizes.Where(s => s.IsAvailable).OrderBy(s => s.DisplayOrder).ToList();
+                if (availableSizes.Count > 1)
+                {
+                    <a asp-controller="Products" asp-action="Details" asp-route-slug="@Model.Slug"
+                       class="btn btn-success btn-sm rounded-pill px-3">
+                        <i class="fa-solid fa-cart-plus"></i> اختر الحجم
+                    </a>
+                }
+                else
+                {
+                    var onlySize = availableSizes.FirstOrDefault();
+                    <button type="button" class="btn btn-success btn-sm rounded-pill px-3"
+                            data-name="@Model.NameAr"
+                            data-code="@Model.Code"
+                            data-size="@(onlySize?.SizeName ?? "")"
+                            data-price="@((onlySize?.Price ?? 0).ToString(System.Globalization.CultureInfo.InvariantCulture))"
+                            data-image="@mainImage"
+                            data-url="@Url.Action("Details", "Products", new { slug = Model.Slug })"
+                            data-currency="@settings.CurrencySymbol"
+                            onclick="addToCart(this)">
+                        <i class="fa-solid fa-cart-plus"></i> أضف للسلة
+                    </button>
+                }
             }
         </div>
 
