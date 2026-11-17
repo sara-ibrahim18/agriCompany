@@ -70,5 +70,11 @@ namespace AgriCompany.Web.Services
         Task<bool> ToggleAvailabilityAsync(int id);
         Task DeleteImageAsync(int imageId);
         Task SetMainImageAsync(int productId, int imageId);
+
+        /// <summary>Number of product images still stored under wwwroot instead of Cloudinary.</summary>
+        Task<int> CountLocalImagesAsync();
+
+        /// <summary>Uploads up to <paramref name="batchSize"/> local product images to Cloudinary.</summary>
+        Task<ImageMoveResult> MoveLocalImagesToCloudinaryAsync(int batchSize = 30);
     }
 }

@@ -10,5 +10,8 @@ namespace AgriCompany.Web.Services
         Task CreateAsync(HomepageSlide slide, IFormFile? image);
         Task<bool> UpdateAsync(HomepageSlide slide, IFormFile? image);
         Task<bool> DeleteAsync(int id);
+
+        /// <summary>Uploads slide images still stored under wwwroot to Cloudinary and points the slides at them.</summary>
+        Task<ImageMoveResult> MoveLocalImagesToCloudinaryAsync();
     }
 }

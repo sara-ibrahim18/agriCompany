@@ -7,11 +7,13 @@ namespace AgriCompany.Web.Services
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IFileUploadService _fileUploadService;
+        private readonly LocalImageMover _imageMover;
 
-        public HomepageService(IUnitOfWork unitOfWork, IFileUploadService fileUploadService)
+        public HomepageService(IUnitOfWork unitOfWork, IFileUploadService fileUploadService, LocalImageMover imageMover)
         {
             _unitOfWork = unitOfWork;
             _fileUploadService = fileUploadService;
+            _imageMover = imageMover;
         }
 
         public async Task<List<HomepageSlide>> GetActiveSlidesAsync() =>
@@ -91,6 +93,35 @@ namespace AgriCompany.Web.Services
             _unitOfWork.HomepageSlides.Remove(slide);
             await _unitOfWork.CompleteAsync();
             return true;
+        }
+    
+        public async Task<ImageMoveResult> MoveLocalImagesToCloudinaryAsync()
+        {
+            if (!_imageMover.CloudinaryEnabled)
+                return ImageMoveResult.Disabled();
+
+            var moved = 0;
+            var failed = new List<string>();
+            var slides = await _unitOfWork.HomepageSlides.FindAsync(s => s.ImagePath.StartsWith("/"));
+
+            foreach (var slide in slides)
+            {
+                var (newPath, error) = await _imageMover.MoveAsync(slide.ImagePath, "slides");
+                if (newPath == null)
+                {
+                    failed.Add($"{slide.TitleAr}: {error}");
+                    continue;
+                }
+
+                slide.ImagePath = newPath;
+                _unitOfWork.HomepageSlides.Update(slide);
+                moved++;
+            }
+
+            if (moved > 0)
+                await _unitOfWork.CompleteAsync();
+
+            return new ImageMoveResult(true, moved, 0, failed);
         }
     }
 }

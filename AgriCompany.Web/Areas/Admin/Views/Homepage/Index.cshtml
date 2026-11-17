@@ -1,6 +1,8 @@
 @model List<HomepageSlide>
 @{
     ViewData["Title"] = "سلايدر الرئيسية";
+    // Slides whose image is still a local /images/... path rather than a Cloudinary URL
+    var localImageCount = Model.Count(s => !string.IsNullOrWhiteSpace(s.ImagePath) && s.ImagePath.StartsWith('/'));
 }
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h3 class="fw-bold mb-0">سلايدر الصفحة الرئيسية</h3>
@@ -8,6 +10,22 @@
         <i class="fa-solid fa-plus"></i> إضافة سلايد
     </a>
 </div>
+
+@if (localImageCount > 0)
+{
+    <div class="alert alert-warning d-flex justify-content-between align-items-center flex-wrap gap-2">
+        <span>
+            <i class="fa-solid fa-cloud-arrow-up"></i>
+            فيه @localImageCount صورة في السلايدر لسه متخزنة على السيرفر ومش على Cloudinary.
+        </span>
+        <form asp-area="Admin" asp-controller="Homepage" asp-action="MoveImagesToCloudinary" method="post" class="m-0">
+            @Html.AntiForgeryToken()
+            <button type="submit" class="btn btn-sm btn-warning rounded-pill px-3">
+                <i class="fa-solid fa-cloud-arrow-up"></i> انقلها إلى Cloudinary
+            </button>
+        </form>
+    </div>
+}
 
 <div class="admin-card">
     <div class="table-responsive">
