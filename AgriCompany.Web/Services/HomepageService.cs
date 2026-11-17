@@ -7,11 +7,15 @@ namespace AgriCompany.Web.Services
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IFileUploadService _fileUploadService;
+        private readonly IWebHostEnvironment _env;
+        private readonly ILogger<HomepageService> _logger;
 
-        public HomepageService(IUnitOfWork unitOfWork, IFileUploadService fileUploadService)
+        public HomepageService(IUnitOfWork unitOfWork, IFileUploadService fileUploadService, IWebHostEnvironment env, ILogger<HomepageService> logger)
         {
             _unitOfWork = unitOfWork;
             _fileUploadService = fileUploadService;
+            _env = env;
+            _logger = logger;
         }
 
         public async Task<List<HomepageSlide>> GetActiveSlidesAsync() =>
@@ -91,6 +95,50 @@ namespace AgriCompany.Web.Services
             _unitOfWork.HomepageSlides.Remove(slide);
             await _unitOfWork.CompleteAsync();
             return true;
+        }
+    
+        public async Task<SlideImageMoveResult> MoveLocalImagesToCloudinaryAsync()
+        {
+            if (_fileUploadService is not CloudinaryUploadService)
+                return SlideImageMoveResult.Disabled();
+
+            var moved = 0;
+            var failed = new List<string>();
+            var slides = await _unitOfWork.HomepageSlides.GetAllAsync();
+
+            foreach (var slide in slides)
+            {
+                // Already a full URL (Cloudinary) — nothing to do
+                if (string.IsNullOrWhiteSpace(slide.ImagePath) || !slide.ImagePath.StartsWith('/'))
+                    continue;
+
+                var fullPath = Path.Combine(_env.WebRootPath, slide.ImagePath.TrimStart('/').Replace('/', Path.DirectorySeparatorChar));
+                if (!File.Exists(fullPath))
+                {
+                    failed.Add($"{slide.TitleAr}: الصورة مش موجودة على السيرفر");
+                    continue;
+                }
+
+                try
+                {
+                    await using var stream = File.OpenRead(fullPath);
+                    var file = new FormFile(stream, 0, stream.Length, "image", Path.GetFileName(fullPath));
+                    // The old file is kept in wwwroot on purpose, as a backup.
+                    slide.ImagePath = await _fileUploadService.SaveImageAsync(file, "slides");
+                    _unitOfWork.HomepageSlides.Update(slide);
+                    moved++;
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogWarning(ex, "Moving slide {SlideId} image to Cloudinary failed", slide.Id);
+                    failed.Add($"{slide.TitleAr}: {(ex is ArgumentException ? ex.Message : "تعذر رفع الصورة")}");
+                }
+            }
+
+            if (moved > 0)
+                await _unitOfWork.CompleteAsync();
+
+            return new SlideImageMoveResult(true, moved, failed);
         }
     }
 }

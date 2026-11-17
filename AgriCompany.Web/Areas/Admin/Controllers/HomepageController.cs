@@ -261,7 +261,20 @@ namespace AgriCompany.Web.Areas.Admin.Controllers
                 return View(slide);
             }
 
-            var result = await _homepageService.UpdateAsync(slide, image);
+            bool result;
+            try
+            {
+                result = await _homepageService.UpdateAsync(slide, image);
+            }
+            catch (ArgumentException ex)
+            {
+                // e.g. unsupported file type, file too large, or Cloudinary upload failed
+                ModelState.AddModelError(string.Empty, ex.Message);
+                var existing = await _homepageService.GetByIdAsync(id);
+                slide.ImagePath = existing?.ImagePath ?? slide.ImagePath;
+                return View(slide);
+            }
+
             if (result)
             {
                 TempData["Success"] = "تم تحديث السلايد بنجاح";
@@ -279,6 +292,33 @@ namespace AgriCompany.Web.Areas.Admin.Controllers
         {
             await _homepageService.DeleteAsync(id);
             TempData["Success"] = "تم حذف السلايد بنجاح";
+            return RedirectToAction(nameof(Index));
+        }
+
+        // Moves slide images still stored on the server (/images/slides/...) to Cloudinary.
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> MoveImagesToCloudinary()
+        {
+            var result = await _homepageService.MoveLocalImagesToCloudinaryAsync();
+
+            if (!result.CloudinaryEnabled)
+            {
+                TempData["Error"] = "Cloudinary غير مفعّل على السيرفر. ضيف مفاتيح Cloudinary في appsettings.Production.json الأول.";
+            }
+            else if (result.Failed.Count > 0)
+            {
+                TempData["Error"] = $"تم نقل {result.Moved} صورة، وفشل نقل {result.Failed.Count}: {string.Join(" | ", result.Failed)}";
+            }
+            else if (result.Moved == 0)
+            {
+                TempData["Success"] = "كل صور السلايدر موجودة على Cloudinary بالفعل";
+            }
+            else
+            {
+                TempData["Success"] = $"تم نقل {result.Moved} صورة إلى Cloudinary بنجاح";
+            }
+
             return RedirectToAction(nameof(Index));
         }
     }
