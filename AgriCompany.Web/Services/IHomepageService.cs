@@ -12,11 +12,6 @@ namespace AgriCompany.Web.Services
         Task<bool> DeleteAsync(int id);
 
         /// <summary>Uploads slide images still stored under wwwroot to Cloudinary and points the slides at them.</summary>
-        Task<SlideImageMoveResult> MoveLocalImagesToCloudinaryAsync();
-    }
-
-    public record SlideImageMoveResult(bool CloudinaryEnabled, int Moved, List<string> Failed)
-    {
-        public static SlideImageMoveResult Disabled() => new(false, 0, new List<string>());
+        Task<ImageMoveResult> MoveLocalImagesToCloudinaryAsync();
     }
 }

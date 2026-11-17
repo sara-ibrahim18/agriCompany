@@ -63,6 +63,7 @@ else
     builder.Services.AddScoped<IFileUploadService>(sp => sp.GetRequiredService<FileUploadService>());
 }
 builder.Services.AddScoped<ISlugService, SlugService>();
+builder.Services.AddScoped<LocalImageMover>();
 builder.Services.AddScoped<IProductService, ProductService>();
 builder.Services.AddScoped<ICategoryService, CategoryService>();
 builder.Services.AddScoped<ICompanyInfoService, CompanyInfoService>();
