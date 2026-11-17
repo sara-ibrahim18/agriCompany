@@ -376,6 +376,8 @@
     <script src="~/lib/toastr/toastr.min.js" asp-append-version="true"></script>
     <script src="~/lib/lightbox2/js/lightbox.min.js" asp-append-version="true"></script>
     <script src="~/lib/sweetalert2/sweetalert2.all.min.js" asp-append-version="true"></script>
+    @* skeleton.js runs before site.js and the page scripts so it marks images before Swiper copies looped slides *@
+    <script src="~/js/skeleton.js" asp-append-version="true"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
     <script src="~/js/whatsapp.js" asp-append-version="true"></script>
 
