@@ -94,6 +94,9 @@ function setupSearchSuggestions(inputId, boxId) {
             return;
         }
 
+        // Placeholder rows while results load
+        if (window.renderSuggestionSkeleton) window.renderSuggestionSkeleton(box, 3);
+
         debounceTimer = setTimeout(function () {
             fetch('/Products/Suggest?q=' + encodeURIComponent(q))
                 .then(function (res) { return res.ok ? res.json() : []; })
@@ -134,6 +137,7 @@ function renderSuggestions(box, items, q) {
 
     box.innerHTML = html;
     box.classList.add('show');
+    if (window.initSkeletons) window.initSkeletons(box);
 }
 
 function escapeHtml(str) {
