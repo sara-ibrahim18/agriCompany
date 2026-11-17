@@ -73,7 +73,7 @@ else
         <div class="row g-4">
             @foreach (var cat in Model.Categories.Take(6))
             {
-                <div class="col-lg-4 col-md-6" data-aos="fade-up">
+                <div class="col-6 col-md-6 col-lg-4" data-aos="fade-up">
                     <a asp-controller="Products" asp-action="ByCategory" asp-route-slug="@cat.Slug" class="category-card d-block">
                         <img src="@(string.IsNullOrWhiteSpace(cat.ImagePath) ? "/images/categories/default.jpg" : cat.ImagePath)" alt="@cat.NameAr" onerror="this.src='/images/placeholders/category.jpg'" />
                         <div class="overlay">
@@ -83,6 +83,12 @@ else
                 </div>
             }
         </div>
+        @if (Model.Categories.Count() > 6)
+        {
+            <div class="text-center mt-4">
+                <a asp-controller="Categories" asp-action="Index" class="btn btn-outline-success rounded-pill px-4">عرض كل الأقسام</a>
+            </div>
+        }
     </div>
 </section>
 

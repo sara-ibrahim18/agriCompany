@@ -45,8 +45,25 @@ builder.Services.AddControllersWithViews();
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
 // ---------- Application Services ----------
-builder.Services.AddScoped<IFileUploadService, FileUploadService>();
+// Images go to Cloudinary when its keys are configured, otherwise to wwwroot/images as before.
+builder.Services.AddScoped<FileUploadService>();
+var cloudinaryConfig = builder.Configuration.GetSection("Cloudinary");
+var cloudName = cloudinaryConfig["CloudName"];
+var cloudApiKey = cloudinaryConfig["ApiKey"];
+var cloudApiSecret = cloudinaryConfig["ApiSecret"];
+if (!string.IsNullOrWhiteSpace(cloudName) && !string.IsNullOrWhiteSpace(cloudApiKey) && !string.IsNullOrWhiteSpace(cloudApiSecret))
+{
+    var cloudinary = new CloudinaryDotNet.Cloudinary(new CloudinaryDotNet.Account(cloudName, cloudApiKey, cloudApiSecret));
+    cloudinary.Api.Secure = true;
+    builder.Services.AddSingleton(cloudinary);
+    builder.Services.AddScoped<IFileUploadService, CloudinaryUploadService>();
+}
+else
+{
+    builder.Services.AddScoped<IFileUploadService>(sp => sp.GetRequiredService<FileUploadService>());
+}
 builder.Services.AddScoped<ISlugService, SlugService>();
+builder.Services.AddScoped<LocalImageMover>();
 builder.Services.AddScoped<IProductService, ProductService>();
 builder.Services.AddScoped<ICategoryService, CategoryService>();
 builder.Services.AddScoped<ICompanyInfoService, CompanyInfoService>();

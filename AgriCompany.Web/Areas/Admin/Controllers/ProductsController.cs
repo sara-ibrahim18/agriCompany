@@ -21,6 +21,7 @@ namespace AgriCompany.Web.Areas.Admin.Controllers
             ViewBag.Categories = await _categoryService.GetAllAsync();
             ViewBag.Search = search;
             ViewBag.CategoryId = categoryId;
+            ViewBag.LocalImageCount = await _productService.CountLocalImagesAsync();
             return View(paged);
         }
 
@@ -175,6 +176,35 @@ namespace AgriCompany.Web.Areas.Admin.Controllers
         {
             await _productService.SetMainImageAsync(productId, imageId);
             return RedirectToAction(nameof(Edit), new { id = productId });
+        }
+
+        // Moves product images still stored on the server (/images/products/...) to Cloudinary, one batch per click.
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> MoveImagesToCloudinary()
+        {
+            var result = await _productService.MoveLocalImagesToCloudinaryAsync();
+
+            if (!result.CloudinaryEnabled)
+            {
+                TempData["Error"] = "Cloudinary غير مفعّل على السيرفر. ضيف مفاتيح Cloudinary في appsettings.Production.json الأول.";
+            }
+            else if (result.Failed.Count > 0)
+            {
+                TempData["Error"] = $"تم نقل {result.Moved} صورة، وفشل نقل {result.Failed.Count}: {string.Join(" | ", result.Failed)}";
+            }
+            else if (result.Moved == 0)
+            {
+                TempData["Success"] = "كل صور المنتجات موجودة على Cloudinary بالفعل";
+            }
+            else
+            {
+                TempData["Success"] = result.Remaining > 0
+                    ? $"تم نقل {result.Moved} صورة إلى Cloudinary. فاضل {result.Remaining} صورة، دوس على الزرار تاني لنقلها."
+                    : $"تم نقل {result.Moved} صورة إلى Cloudinary بنجاح";
+            }
+
+            return RedirectToAction(nameof(Index));
         }
 
         private static List<string> ParseSizesCsv(string? sizesCsv)

@@ -11,15 +11,17 @@ namespace AgriCompany.Web.Services
         private readonly IUnitOfWork _unitOfWork;
         private readonly IFileUploadService _fileUploadService;
         private readonly ISlugService _slugService;
+        private readonly LocalImageMover _imageMover;
 
-        public ProductService(IUnitOfWork unitOfWork, IFileUploadService fileUploadService, ISlugService slugService)
+        public ProductService(IUnitOfWork unitOfWork, IFileUploadService fileUploadService, ISlugService slugService, LocalImageMover imageMover)
         {
             _unitOfWork = unitOfWork;
             _fileUploadService = fileUploadService;
             _slugService = slugService;
+            _imageMover = imageMover;
         }
 
-       
+
         public async Task<PagedResult<Product>> GetPublicProductsAsync(
            string? searchTerm,
            int? categoryId,
@@ -40,12 +42,14 @@ namespace AgriCompany.Web.Services
 
             if (!string.IsNullOrWhiteSpace(searchTerm))
             {
+                // البحث مقصور على اسم المنتج (عربي/إنجليزي) واسم القسم فقط،
+                // عشان نتايج البحث تكون دقيقة وسريعة ومفيهاش ضغطات زيادة على المستخدم.
                 var term = searchTerm.Trim().ToLower();
                 query = query.Where(p =>
     p.NameAr.ToLower().Contains(term) ||
     p.NameEn.ToLower().Contains(term) ||
-    p.Code.ToLower().Contains(term) ||
-    (p.Description != null && p.Description.ToLower().Contains(term)));
+    (p.Category != null && p.Category.NameAr.ToLower().Contains(term)) ||
+    (p.Category != null && p.Category.NameEn.ToLower().Contains(term)));
             }
 
             // Sorting
@@ -441,6 +445,44 @@ namespace AgriCompany.Web.Services
 
             var product = await _unitOfWork.Products.GetByIdAsync(history.ProductId);
             return product?.Slug;
+        }
+    
+        public Task<int> CountLocalImagesAsync() =>
+            _unitOfWork.ProductImages.CountAsync(i => i.ImagePath.StartsWith("/"));
+
+        public async Task<ImageMoveResult> MoveLocalImagesToCloudinaryAsync(int batchSize = 30)
+        {
+            if (!_imageMover.CloudinaryEnabled)
+                return ImageMoveResult.Disabled();
+
+            // Limited batch per request so a big catalogue doesn't hit the hosting request timeout.
+            var images = await _unitOfWork.ProductImages.Query()
+                .Include(i => i.Product)
+                .Where(i => i.ImagePath.StartsWith("/"))
+                .OrderBy(i => i.Id)
+                .Take(batchSize)
+                .ToListAsync();
+
+            var moved = 0;
+            var failed = new List<string>();
+
+            foreach (var image in images)
+            {
+                var (newPath, error) = await _imageMover.MoveAsync(image.ImagePath, "products");
+                if (newPath == null)
+                {
+                    failed.Add($"{image.Product?.NameAr ?? image.ImagePath}: {error}");
+                    continue;
+                }
+
+                image.ImagePath = newPath;
+                moved++;
+            }
+
+            if (moved > 0)
+                await _unitOfWork.CompleteAsync();
+
+            return new ImageMoveResult(true, moved, await CountLocalImagesAsync(), failed);
         }
     }
 }

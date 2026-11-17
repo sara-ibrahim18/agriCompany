@@ -1,0 +1,5 @@
+# Production secrets (Cloudinary keys) - published with the site, never pushed to GitHub
+**/appsettings.Production.json
+
+# Visual Studio cache
+.vs/

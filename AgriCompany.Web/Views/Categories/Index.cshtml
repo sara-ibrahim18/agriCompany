@@ -1,9 +1,9 @@
 @model List<Category>
-    @{
-        ViewData["Title"] = "أقسام المنتجات";
-        ViewData["MetaDescription"] = "تصفح جميع أقسام المنتجات الزراعية لدينا: " + string.Join("، ", Model.Take(6).Select(c => c.NameAr)) + " وأكثر.";
-        ViewData["MetaKeywords"] = "أقسام المنتجات, " + string.Join(", ", Model.Select(c => c.NameAr));
-    }
+@{
+    ViewData["Title"] = "أقسام المنتجات";
+    ViewData["MetaDescription"] = "تصفح جميع أقسام المنتجات الزراعية لدينا: " + string.Join("، ", Model.Take(6).Select(c => c.NameAr)) + " وأكثر.";
+    ViewData["MetaKeywords"] = "أقسام المنتجات, " + string.Join(", ", Model.Select(c => c.NameAr));
+}
 <div class="page-header text-center">
     <div class="container">
         <h1>أقسام المنتجات</h1>
@@ -21,7 +21,7 @@
         <div class="row g-4">
             @foreach (var cat in Model)
             {
-                <div class="col-lg-4 col-md-6" data-aos="fade-up">
+                <div class="col-6 col-md-6 col-lg-4" data-aos="fade-up">
                     <a asp-controller="Products" asp-action="ByCategory" asp-route-slug="@cat.Slug" class="category-card d-block">
                         <img src="@(string.IsNullOrWhiteSpace(cat.ImagePath) ? "/images/placeholders/category.jpg" : cat.ImagePath)" alt="@cat.NameAr" />
                         <div class="overlay">

@@ -60,7 +60,7 @@
                 {
                     <span class="badge bg-secondary mb-2">غير متوفر حاليًا</span>
                 }
-               
+
                 <h2 class="fw-bold mb-2">@Model.NameAr</h2>
                 @if (!string.IsNullOrWhiteSpace(Model.NameEn))
                 {
@@ -88,7 +88,6 @@
                 <p class="text-muted">@Model.Description</p>
 
                 <!-- الأحجام والسعر -->
-                <!-- الأحجام والسعر -->
                 @if (Model.Sizes.Any())
                 {
                     <div class="mb-4">
@@ -99,7 +98,7 @@
                                 <button type="button"
                                         class="size-btn btn btn-outline-success rounded-pill px-4 py-2"
                                         data-size="@size.SizeName"
-                                        data-price="@size.Price"
+                                        data-price="@size.Price.ToString(System.Globalization.CultureInfo.InvariantCulture)"
                                         onclick="selectSize(this)">
                                     @size.SizeName - @size.Price.ToString("N0") ج.م
                                 </button>
@@ -116,15 +115,22 @@
                         <label class="fw-bold mb-0">الكمية:</label>
                         <input type="number" id="qty-@Model.Code" value="1" min="1" class="form-control" style="width:100px;" />
                     </div>
-                    <button type="button" class="btn btn-whatsapp btn-lg rounded-pill px-5"
-                            onclick="orderViaWhatsApp(this)"
-                            data-whatsapp="@company.WhatsAppNumber"
-                            data-name="@Model.NameAr"
-                            data-code="@Model.Code"
-                            data-price="@(Model.Sizes.Any() ? Model.Sizes.Min(s => s.Price) : 0)"
-                            data-currency="@settings.CurrencySymbol">
-                        <i class="fa-brands fa-whatsapp"></i> اطلب الآن عبر واتساب
-                    </button>
+                    <div class="d-grid gap-2 d-md-flex">
+                        <button type="button" class="btn btn-success btn-lg rounded-pill px-4 px-md-5"
+                                onclick="addToCart(this)"
+                                data-use-selection="true"
+                                data-name="@Model.NameAr"
+                                data-code="@Model.Code"
+                                data-price="@((minPrice ?? 0).ToString(System.Globalization.CultureInfo.InvariantCulture))"
+                                data-image="@mainImage"
+                                data-url="@Url.Action("Details", "Products", new { slug = Model.Slug })"
+                                data-currency="@settings.CurrencySymbol">
+                            <i class="fa-solid fa-cart-plus"></i> أضف إلى السلة
+                        </button>
+                        <a asp-controller="Cart" asp-action="Index" class="btn btn-outline-success btn-lg rounded-pill px-4">
+                            <i class="fa-solid fa-cart-shopping"></i> عرض السلة
+                        </a>
+                    </div>
                 }
             </div>
         </div>
